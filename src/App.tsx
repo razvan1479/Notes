@@ -7,11 +7,12 @@ import { TaskInput } from "./components/TaskInput";
 import { SearchBar } from "./components/SearchBar";
 import { TaskList } from "./components/TaskList";
 import { Settings } from "./components/Settings";
-import { UpdateBanner } from "./components/UpdateBanner";
+import { UpdatePopup } from "./components/UpdatePopup";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
+import { useColors } from "./hooks/useColors";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
 function norm(s: string): string {
@@ -25,10 +26,12 @@ export default function App() {
   const { tasks, loading, now, add, editText, toggle, remove, reorderActive } = useTasks();
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
+  const colors = useColors(theme);
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const addInputRef = useRef<HTMLInputElement>(null);
@@ -95,12 +98,15 @@ export default function App() {
       <Header
         activeCount={activeCount}
         theme={theme}
+        updateAvailable={update.status.kind === "available"}
         onToggleSearch={() => (searchOpen ? closeSearch() : openSearch())}
         onToggleTheme={toggleTheme}
+        onCheckUpdate={() => {
+          setUpdateOpen(true);
+          update.checkNow(false);
+        }}
         onOpenSettings={() => setSettingsOpen(true)}
       />
-
-      <UpdateBanner status={update.status} onInstall={update.install} />
 
       <TaskInput ref={addInputRef} onAdd={add} />
 
@@ -131,7 +137,15 @@ export default function App() {
           theme={theme}
           onSetTheme={setTheme}
           onClose={() => setSettingsOpen(false)}
-          update={update}
+          colors={colors}
+        />
+      )}
+
+      {updateOpen && (
+        <UpdatePopup
+          status={update.status}
+          onInstall={update.install}
+          onClose={() => setUpdateOpen(false)}
         />
       )}
     </div>

@@ -6,12 +6,22 @@ import type { ThemeMode } from "../types";
 interface Props {
   activeCount: number;
   theme: ThemeMode;
+  updateAvailable: boolean;
   onToggleSearch: () => void;
   onToggleTheme: () => void;
+  onCheckUpdate: () => void;
   onOpenSettings: () => void;
 }
 
-export function Header({ activeCount, theme, onToggleSearch, onToggleTheme, onOpenSettings }: Props) {
+export function Header({
+  activeCount,
+  theme,
+  updateAvailable,
+  onToggleSearch,
+  onToggleTheme,
+  onCheckUpdate,
+  onOpenSettings,
+}: Props) {
   return (
     <header className="header">
       <div className="header__title">
@@ -59,6 +69,32 @@ export function Header({ activeCount, theme, onToggleSearch, onToggleTheme, onOp
               />
             </svg>
           )}
+        </button>
+
+        <button
+          className="icon-btn icon-btn--update"
+          onClick={onCheckUpdate}
+          aria-label="Verifica update"
+          title="Verifica update"
+        >
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+            <path
+              d="M16.5 6.5A7 7 0 1 0 17 10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M16.5 3v3.7h-3.7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {updateAvailable && <span className="icon-btn__badge" aria-hidden="true" />}
         </button>
 
         <button className="icon-btn" onClick={onOpenSettings} aria-label="Setari" title="Setari">
