@@ -5,14 +5,20 @@ import { useEffect, useState } from "react";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { UpdateButton } from "./UpdateButton";
 import type { ThemeMode } from "../types";
+import type { UpdateStatus } from "../hooks/useUpdate";
 
 interface Props {
   theme: ThemeMode;
   onSetTheme: (t: ThemeMode) => void;
   onClose: () => void;
+  update: {
+    status: UpdateStatus;
+    checkNow: (silent: boolean) => void;
+    install: () => void;
+  };
 }
 
-export function Settings({ theme, onSetTheme, onClose }: Props) {
+export function Settings({ theme, onSetTheme, onClose, update }: Props) {
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +102,11 @@ export function Settings({ theme, onSetTheme, onClose }: Props) {
           </div>
         </div>
 
-        <UpdateButton />
+        <UpdateButton
+          status={update.status}
+          onCheck={() => update.checkNow(false)}
+          onInstall={update.install}
+        />
 
         {error && <p className="settings__error">{error}</p>}
 

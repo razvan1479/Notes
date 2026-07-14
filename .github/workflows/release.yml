@@ -1,13 +1,13 @@
-# Publica un update instalabil din aplicatie.
-# Se declanseaza cand dai push la un tag de forma v* (ex. v1.0.1).
-# Compileaza, SEMNEAZA update-ul cu cheia privata (secret) si creeaza
-# un GitHub Release cu installer-ul + latest.json (folosit de updater).
+# Publica automat un update la fiecare push pe main.
+# Creste singur versiunea (1.0.<numarul rularii>), compileaza, SEMNEAZA
+# si publica un GitHub Release cu installer-ul + latest.json.
+# Tu doar dai push din VS Code; aplicatia va gasi singura update-ul.
 
 name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main, master]
   workflow_dispatch: {}
 
 permissions:
@@ -33,6 +33,13 @@ jobs:
         with:
           workspaces: "src-tauri -> target"
 
+      - name: Seteaza versiunea automat (1.0.<run_number>)
+        shell: bash
+        env:
+          VERSION: 1.0.${{ github.run_number }}
+        run: |
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const c=JSON.parse(fs.readFileSync(p));c.version=process.env.VERSION;fs.writeFileSync(p,JSON.stringify(c,null,2));console.log('Versiune setata la',c.version)"
+
       - name: Instaleaza dependentele frontend
         run: npm install
 
@@ -43,8 +50,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "QuickTasks ${{ github.ref_name }}"
-          releaseBody: "Versiune noua. Deschide aplicatia si apasa Verifica update."
+          tagName: v__VERSION__
+          releaseName: "QuickTasks v__VERSION__"
+          releaseBody: "Versiune noua. Deschide aplicatia — te anunta singura ca exista update."
           releaseDraft: false
           prerelease: false

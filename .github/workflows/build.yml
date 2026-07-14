@@ -1,13 +1,11 @@
-# Compileaza aplicatia pe un server Windows de la GitHub (gratuit).
-# Nu ai nevoie de Rust/Node/Visual Studio pe laptopul tau.
-# Rezultatul (exe portabil + instalator) apare la sectiunea "Artifacts".
+# Build manual (optional). Produce exe portabil + installer ca "Artifacts",
+# fara sa creeze un Release. Il pornesti manual din tab-ul Actions daca vrei.
+# Pentru update-uri automate NU e nevoie de el; se ocupa release.yml.
 
-name: Build Windows
+name: Build Windows (manual)
 
 on:
-  push:
-    branches: [main, master]
-  workflow_dispatch: {}   # permite pornirea manuala din tab-ul Actions
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -24,7 +22,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust (accelereaza rularile urmatoare)
+      - name: Cache Rust
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "src-tauri -> target"

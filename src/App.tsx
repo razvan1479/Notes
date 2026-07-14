@@ -7,9 +7,11 @@ import { TaskInput } from "./components/TaskInput";
 import { SearchBar } from "./components/SearchBar";
 import { TaskList } from "./components/TaskList";
 import { Settings } from "./components/Settings";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
 import { useHotkeys } from "./hooks/useHotkeys";
+import { useUpdate } from "./hooks/useUpdate";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
 function norm(s: string): string {
@@ -22,6 +24,7 @@ function norm(s: string): string {
 export default function App() {
   const { tasks, loading, now, add, editText, toggle, remove, reorderActive } = useTasks();
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
+  const update = useUpdate();
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -97,6 +100,8 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
+      <UpdateBanner status={update.status} onInstall={update.install} />
+
       <TaskInput ref={addInputRef} onAdd={add} />
 
       {searchOpen && (
@@ -122,7 +127,12 @@ export default function App() {
       )}
 
       {settingsOpen && (
-        <Settings theme={theme} onSetTheme={setTheme} onClose={() => setSettingsOpen(false)} />
+        <Settings
+          theme={theme}
+          onSetTheme={setTheme}
+          onClose={() => setSettingsOpen(false)}
+          update={update}
+        />
       )}
     </div>
   );

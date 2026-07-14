@@ -1,78 +1,22 @@
-// Buton de update in-app.
-// Verifica GitHub Releases (prin tauri-plugin-updater), iar daca exista o
-// versiune noua semnata, o descarca, o instaleaza si relanseaza aplicatia.
-//
-// Fluxul de publicare a unui update (din partea dezvoltatorului):
-//   1. cresti "version" in src-tauri/tauri.conf.json (ex. 1.0.0 -> 1.0.1)
-//   2. faci commit si dai push la un tag: git tag v1.0.1 && git push --tags
-//   3. GitHub Actions compileaza, semneaza si publica Release-ul automat
-//   4. aici, butonul gaseste noua versiune si o aduce in aplicatie
+// Butonul de update din Setari. Foloseste starea partajata (useUpdate),
+// aceeasi pe care o vede si bara de sus. Cand exista deja un update gasit,
+// butonul devine "Instaleaza acum"; altfel "Verifica update".
 
-import { useState } from "react";
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
+import type { UpdateStatus } from "../hooks/useUpdate";
 
-type Status =
-  | { kind: "idle" }
-  | { kind: "checking" }
-  | { kind: "uptodate" }
-  | { kind: "available"; version: string }
-  | { kind: "downloading"; percent: number }
-  | { kind: "installing" }
-  | { kind: "error"; message: string };
+interface Props {
+  status: UpdateStatus;
+  onCheck: () => void;
+  onInstall: () => void;
+}
 
-export function UpdateButton() {
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
-
-  const handleCheck = async () => {
-    setStatus({ kind: "checking" });
-    try {
-      const update = await check();
-
-      if (!update) {
-        setStatus({ kind: "uptodate" });
-        return;
-      }
-
-      setStatus({ kind: "available", version: update.version });
-
-      // Descarcare cu progres, apoi instalare.
-      let downloaded = 0;
-      let total = 0;
-      await update.downloadAndInstall((event) => {
-        switch (event.event) {
-          case "Started":
-            total = event.data.contentLength ?? 0;
-            setStatus({ kind: "downloading", percent: 0 });
-            break;
-          case "Progress":
-            downloaded += event.data.chunkLength;
-            setStatus({
-              kind: "downloading",
-              percent: total > 0 ? Math.round((downloaded / total) * 100) : 0,
-            });
-            break;
-          case "Finished":
-            setStatus({ kind: "installing" });
-            break;
-        }
-      });
-
-      // Instalarea s-a terminat: relansam aplicatia pe versiunea noua.
-      await relaunch();
-    } catch (e) {
-      console.error(e);
-      // In modul browser/dev (fara backend Tauri) check() esueaza; tratam curat.
-      const message =
-        e instanceof Error ? e.message : "Verificarea update-ului a esuat.";
-      setStatus({ kind: "error", message });
-    }
-  };
-
+export function UpdateButton({ status, onCheck, onInstall }: Props) {
   const busy =
     status.kind === "checking" ||
     status.kind === "downloading" ||
     status.kind === "installing";
+
+  const available = status.kind === "available";
 
   return (
     <div className="settings__row">
@@ -80,23 +24,27 @@ export function UpdateButton() {
         <span className="settings__title">Actualizare</span>
         <span className="settings__desc">{describe(status)}</span>
       </div>
-      <button className="btn" onClick={handleCheck} disabled={busy}>
-        {busy ? "…" : "Verifica update"}
+      <button
+        className="btn"
+        onClick={available ? onInstall : onCheck}
+        disabled={busy}
+      >
+        {busy ? "…" : available ? "Instaleaza acum" : "Verifica update"}
       </button>
     </div>
   );
 }
 
-function describe(status: Status): string {
+function describe(status: UpdateStatus): string {
   switch (status.kind) {
     case "idle":
-      return "Cauta versiuni noi publicate pe GitHub.";
+      return "Aplicatia verifica singura la pornire. Poti verifica si acum.";
     case "checking":
       return "Se verifica...";
     case "uptodate":
       return "Ai deja cea mai noua versiune.";
     case "available":
-      return `Versiune noua gasita: ${status.version}. Se pregateste...`;
+      return `Versiune noua gasita: ${status.version}.`;
     case "downloading":
       return `Se descarca... ${status.percent}%`;
     case "installing":

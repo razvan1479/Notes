@@ -546,6 +546,44 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
+/* ---------- Bara de update ---------- */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 6px 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.update-banner__text {
+  min-width: 0;
+}
+
+.update-banner__btn {
+  flex-shrink: 0;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.update-banner__btn:hover {
+  opacity: 0.9;
+}
+
 /* ---------- Buton standard (ex. Verifica update) ---------- */
 .btn {
   border: 1px solid var(--border);
