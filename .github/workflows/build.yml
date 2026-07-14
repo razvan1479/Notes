@@ -1,9 +1,13 @@
+# Compileaza aplicatia pe un server Windows de la GitHub (gratuit).
+# Nu ai nevoie de Rust/Node/Visual Studio pe laptopul tau.
+# Rezultatul (exe portabil + instalator) apare la sectiunea "Artifacts".
+
 name: Build Windows
 
 on:
   push:
     branches: [main, master]
-  workflow_dispatch: {}
+  workflow_dispatch: {}   # permite pornirea manuala din tab-ul Actions
 
 jobs:
   build:
@@ -19,6 +23,11 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust (accelereaza rularile urmatoare)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
 
       - name: Instaleaza dependentele frontend
         run: npm install

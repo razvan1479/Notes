@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
+import { UpdateButton } from "./UpdateButton";
 import type { ThemeMode } from "../types";
 
 interface Props {
@@ -94,6 +95,8 @@ export function Settings({ theme, onSetTheme, onClose }: Props) {
             </button>
           </div>
         </div>
+
+        <UpdateButton />
 
         {error && <p className="settings__error">{error}</p>}
 

@@ -1,0 +1,16 @@
+# Node
+node_modules/
+dist/
+*.log
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Chei de semnare (NU se urca)
+*.key
+*.key.pub

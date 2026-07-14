@@ -30,6 +30,10 @@ pub fn run() {
         }))
         // SQLite pentru stocare locala.
         .plugin(tauri_plugin_sql::Builder::default().build())
+        // Update in-app: verifica GitHub Releases si instaleaza versiuni noi semnate.
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        // Necesar pentru relansarea aplicatiei dupa instalarea update-ului.
+        .plugin(tauri_plugin_process::init())
         // Pornire automata cu Windows. Argumentul "--minimized" este adaugat
         // la comanda de lansare, ca sa stim ca pornirea a venit de la sistem.
         .plugin(tauri_plugin_autostart::init(
