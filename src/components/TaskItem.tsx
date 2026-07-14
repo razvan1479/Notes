@@ -191,6 +191,27 @@ export function TaskItem(props: Props) {
       {task.completed && task.completedAt != null && (
         <ExpiryIndicator completedAt={task.completedAt} now={now} />
       )}
+
+      <button
+        className="task__delete"
+        aria-label="Sterge nota"
+        title="Sterge nota"
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onDelete(task.id);
+        }}
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path
+            d="M2.75 4h10.5M6 4V2.75h4V4M4.25 4l.5 9.25a1 1 0 0 0 1 .95h4.5a1 1 0 0 0 1-.95l.5-9.25M6.5 6.5v5M9.5 6.5v5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
     </div>
   );
 }
