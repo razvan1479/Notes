@@ -269,8 +269,8 @@ body {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   margin-top: 1px;
   border: 2px solid var(--text-muted);
   border-radius: 50%;
