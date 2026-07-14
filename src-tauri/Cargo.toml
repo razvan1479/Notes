@@ -1,0 +1,30 @@
+[package]
+name = "quicktasks"
+version = "1.0.0"
+description = "Aplicatie desktop minimalista To-Do / Sticky Notes"
+authors = ["iDeaL"]
+edition = "2021"
+
+# Numele bibliotecii folosit de main.rs (quicktasks_lib::run()).
+[lib]
+name = "quicktasks_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Optimizari pentru un binar de release cat mai mic (consum redus).
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
