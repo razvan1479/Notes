@@ -25,8 +25,10 @@ serde_json = "1"
 
 # Optimizari pentru un binar de release cat mai mic (consum redus).
 [profile.release]
+# Reglat pentru COMPILARE RAPIDA (deploy scurt), nu pentru binar minim.
+# LTO oprit + codegen-units mari = compilare mult mai rapida pe GitHub.
 panic = "abort"
-codegen-units = 1
-lto = true
-opt-level = "s"
+codegen-units = 16
+lto = false
+opt-level = 2
 strip = true
