@@ -10,6 +10,8 @@ export interface Task {
   completedAt: number | null;
   /** Pozitia manuala pentru drag & drop (mai mic = mai sus). */
   position: number;
+  /** Task prioritar (afiseaza semnul exclamarii). */
+  priority: boolean;
 }
 
 /** Forma bruta a randului din SQLite (numere in loc de boolean). */
@@ -20,6 +22,7 @@ export interface TaskRow {
   created_at: number;
   completed_at: number | null;
   position: number;
+  priority: number;
 }
 
 export type ThemeMode = "light" | "dark";

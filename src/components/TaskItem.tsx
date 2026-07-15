@@ -19,6 +19,7 @@ interface Props {
   onToggle: (id: number) => void;
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;
+  onTogglePriority: (id: number) => void;
   // Drag & drop (doar pentru task-urile active).
   draggable?: boolean;
   onDragStart?: (id: number) => void;
@@ -99,6 +100,7 @@ export function TaskItem(props: Props) {
       className={[
         "task",
         task.completed ? "task--done" : "",
+        task.priority ? "task--priority" : "",
         selected ? "task--selected" : "",
         props.isDragging ? "task--dragging" : "",
         props.isDragOver ? "task--dragover" : "",
@@ -107,9 +109,15 @@ export function TaskItem(props: Props) {
         .join(" ")}
       draggable={props.draggable && !editing}
       onClick={() => props.onSelect(task.id)}
-      onDragStart={() => props.onDragStart?.(task.id)}
+      onDragStart={(e) => {
+        // Necesar ca drag-ul sa porneasca fiabil in WebView/Chromium.
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(task.id));
+        props.onDragStart?.(task.id);
+      }}
       onDragOver={(e) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
         props.onDragOver?.(task.id);
       }}
       onDrop={(e) => {
@@ -141,6 +149,12 @@ export function TaskItem(props: Props) {
           </svg>
         )}
       </button>
+
+      {task.priority && (
+        <span className="task__prio" title="Task prioritar" aria-label="Prioritar">
+          !
+        </span>
+      )}
 
       <div className="task__body">
         {editing ? (
@@ -191,6 +205,28 @@ export function TaskItem(props: Props) {
       {task.completed && task.completedAt != null && (
         <ExpiryIndicator completedAt={task.completedAt} now={now} />
       )}
+
+      <button
+        className={`task__prio-btn ${task.priority ? "task__prio-btn--on" : ""}`}
+        aria-label={task.priority ? "Scoate prioritatea" : "Marcheaza prioritar"}
+        aria-pressed={task.priority}
+        title={task.priority ? "Scoate prioritatea" : "Marcheaza prioritar"}
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onTogglePriority(task.id);
+        }}
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path
+            d="M4 14V2.5M4 3h7.5l-1.5 2.5 1.5 2.5H4"
+            fill={task.priority ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
       <button
         className="task__delete"

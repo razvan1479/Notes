@@ -14,6 +14,7 @@ interface Props {
   onToggle: (id: number) => void;
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;
+  onTogglePriority: (id: number) => void;
   onReorderActive: (orderedActiveIds: number[]) => void;
 }
 
@@ -52,6 +53,7 @@ export function TaskList(props: Props) {
       onToggle={props.onToggle}
       onEditText={props.onEditText}
       onDelete={props.onDelete}
+      onTogglePriority={props.onTogglePriority}
       draggable={allowDrag}
       onDragStart={setDragId}
       onDragOver={setOverId}

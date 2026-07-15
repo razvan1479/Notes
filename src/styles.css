@@ -55,8 +55,16 @@ body,
 }
 
 body {
-  font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system,
-    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family: var(
+    --app-font,
+    "Segoe UI Variable Text",
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    sans-serif
+  );
   font-size: 16px;
   line-height: 1.4;
   color: var(--text);
@@ -326,7 +334,7 @@ body {
 }
 
 .task__text {
-  font-size: 17px;
+  font-size: var(--task-font-size, 17px);
   color: var(--text);
   word-break: break-word;
   cursor: text;
@@ -345,7 +353,7 @@ body {
 }
 
 .task__edit {
-  font-size: 17px;
+  font-size: var(--task-font-size, 17px);
   font-family: inherit;
   color: var(--text);
   background: var(--bg);
@@ -382,6 +390,66 @@ body {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+/* Marcajul "!" din stanga textului, pentru task prioritar. */
+.task__prio {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Cotorul din stanga devine rosu cand task-ul e prioritar (si activ). */
+.task--priority:not(.task--done) {
+  border-left-color: var(--danger);
+}
+
+/* Butonul de marcare prioritate (steag). */
+.task__prio-btn {
+  flex-shrink: 0;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.task:hover .task__prio-btn,
+.task__prio-btn:focus-visible {
+  opacity: 1;
+}
+
+.task__prio-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Cand e activ, steagul ramane mereu vizibil si colorat. */
+.task__prio-btn--on {
+  opacity: 1;
+  color: var(--danger);
+}
+
+.task__prio-btn--on:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 /* Apare la trecerea peste nota, sau cand butonul are focus (tastatura). */
@@ -528,6 +596,29 @@ body {
 /* ---------- Color customizer ---------- */
 .settings__row--block {
   display: block;
+}
+
+/* ---------- Typography fields ---------- */
+.type-field {
+  margin-top: 12px;
+}
+
+.type-field__label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.segmented--wrap {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.type-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .colors__head {

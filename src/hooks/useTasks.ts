@@ -11,6 +11,7 @@ import {
   getAllTasks,
   persistOrder,
   setTaskCompleted,
+  setTaskPriority,
   updateTaskText,
 } from "../db/database";
 import { isExpired } from "../lib/time";
@@ -99,6 +100,18 @@ export function useTasks() {
     await dbDelete(id);
   }, []);
 
+  const togglePriority = useCallback(async (id: number) => {
+    let next = false;
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        next = !t.priority;
+        return { ...t, priority: next };
+      })
+    );
+    await setTaskPriority(id, next);
+  }, []);
+
   /** Reordoneaza task-urile active dupa drag & drop si salveaza pozitiile. */
   const reorderActive = useCallback(
     async (orderedActiveIds: number[]) => {
@@ -131,6 +144,7 @@ export function useTasks() {
     editText,
     toggle,
     remove,
+    togglePriority,
     reorderActive,
     tasksRef,
   };

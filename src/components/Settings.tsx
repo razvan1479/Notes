@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { ColorCustomizer } from "./ColorCustomizer";
+import { useTypography, MIN_SIZE, MAX_SIZE } from "../hooks/useTypography";
 import type { ThemeMode } from "../types";
 import type { useColors } from "../hooks/useColors";
 
@@ -18,6 +19,7 @@ export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const type = useTypography();
 
   // Citim starea reala de la sistem la deschiderea panoului.
   useEffect(() => {
@@ -95,6 +97,42 @@ export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
             >
               Dark
             </button>
+          </div>
+        </div>
+
+        <div className="settings__row settings__row--block">
+          <span className="settings__title">Scriere</span>
+          <span className="settings__desc">
+            Fontul si marimea textului din note.
+          </span>
+
+          <div className="type-field">
+            <span className="type-field__label">Font</span>
+            <div className="segmented segmented--wrap">
+              {type.fonts.map((f) => (
+                <button
+                  key={f.id}
+                  className={`segmented__opt ${type.font === f.id ? "segmented__opt--on" : ""}`}
+                  style={f.stack ? { fontFamily: f.stack } : undefined}
+                  onClick={() => type.setFont(f.id)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="type-field">
+            <span className="type-field__label">Marime: {type.size}px</span>
+            <input
+              className="type-slider"
+              type="range"
+              min={MIN_SIZE}
+              max={MAX_SIZE}
+              value={type.size}
+              onChange={(e) => type.setSize(Number(e.target.value))}
+              aria-label="Marimea textului"
+            />
           </div>
         </div>
 

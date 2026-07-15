@@ -23,9 +23,19 @@ async function getDb(): Promise<Database> {
           completed    INTEGER NOT NULL DEFAULT 0,
           created_at   INTEGER NOT NULL,
           completed_at INTEGER,
-          position     INTEGER NOT NULL DEFAULT 0
+          position     INTEGER NOT NULL DEFAULT 0,
+          priority     INTEGER NOT NULL DEFAULT 0
         );
       `);
+      // Migrare pentru bazele create inainte de coloana "priority".
+      // SQLite nu are ADD COLUMN IF NOT EXISTS, deci ignoram eroarea daca exista deja.
+      try {
+        await db.execute(
+          `ALTER TABLE tasks ADD COLUMN priority INTEGER NOT NULL DEFAULT 0;`
+        );
+      } catch {
+        /* coloana exista deja */
+      }
       // Index pentru sortare rapida chiar si cu multe task-uri.
       await db.execute(
         `CREATE INDEX IF NOT EXISTS idx_tasks_position ON tasks(position);`
@@ -45,6 +55,7 @@ function rowToTask(r: TaskRow): Task {
     createdAt: r.created_at,
     completedAt: r.completed_at,
     position: r.position,
+    priority: r.priority === 1,
   };
 }
 
@@ -78,6 +89,7 @@ export async function addTask(text: string): Promise<Task> {
     createdAt: now,
     completedAt: null,
     position: nextPos,
+    priority: false,
   };
 }
 
@@ -99,6 +111,15 @@ export async function setTaskCompleted(id: number, completed: boolean): Promise<
     `UPDATE tasks SET completed = $1, completed_at = $2 WHERE id = $3;`,
     [completed ? 1 : 0, completedAt, id]
   );
+}
+
+/** Marcheaza / demarcheaza un task ca prioritar. */
+export async function setTaskPriority(id: number, priority: boolean): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET priority = $1 WHERE id = $2;`, [
+    priority ? 1 : 0,
+    id,
+  ]);
 }
 
 /** Sterge definitiv un task. */

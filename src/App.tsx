@@ -23,7 +23,7 @@ function norm(s: string): string {
 }
 
 export default function App() {
-  const { tasks, loading, now, add, editText, toggle, remove, reorderActive } = useTasks();
+  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, reorderActive } = useTasks();
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
@@ -128,6 +128,7 @@ export default function App() {
           onToggle={toggle}
           onEditText={editText}
           onDelete={remove}
+          onTogglePriority={togglePriority}
           onReorderActive={reorderActive}
         />
       )}
