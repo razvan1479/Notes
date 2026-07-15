@@ -593,6 +593,12 @@ body {
   color: var(--text-muted);
 }
 
+.settings__version {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
 /* ---------- Color customizer ---------- */
 .settings__row--block {
   display: block;

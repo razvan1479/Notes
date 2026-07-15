@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
+import { getVersion } from "@tauri-apps/api/app";
 import { ColorCustomizer } from "./ColorCustomizer";
 import { useTypography, MIN_SIZE, MAX_SIZE } from "../hooks/useTypography";
 import { useI18n } from "../i18n/i18n";
@@ -21,7 +22,14 @@ export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState<string | null>(null);
   const type = useTypography();
+
+  useEffect(() => {
+    getVersion()
+      .then(setVersion)
+      .catch(() => setVersion(null)); // in browser/preview nu exista
+  }, []);
 
   useEffect(() => {
     isEnabled()
@@ -157,7 +165,10 @@ export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
 
         {error && <p className="settings__error">{error}</p>}
 
-        <p className="settings__foot">{t("settings.foot")}</p>
+        <p className="settings__foot">
+          {t("settings.foot")}
+          {version && <span className="settings__version">{t("settings.version", { v: version })}</span>}
+        </p>
       </div>
     </div>
   );

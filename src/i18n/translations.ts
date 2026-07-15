@@ -61,6 +61,7 @@ export const translations: Record<Lang, Dict> = {
     "settings.language_title": "Language",
     "settings.language_desc": "Choose the app language.",
     "settings.foot": "Completed tasks auto-delete after 8h. Data is stored locally.",
+    "settings.version": "Version {v}",
 
     "font.system": "System",
 
@@ -150,6 +151,7 @@ export const translations: Record<Lang, Dict> = {
     "settings.language_title": "Limbă",
     "settings.language_desc": "Alege limba aplicației.",
     "settings.foot": "Task-urile bifate se șterg automat la 8h. Datele sunt salvate local.",
+    "settings.version": "Versiunea {v}",
 
     "font.system": "Sistem",
 
