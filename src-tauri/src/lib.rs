@@ -11,9 +11,30 @@ use tauri::{
 };
 use tauri_plugin_autostart::MacosLauncher;
 
+/// Aseaza fereastra pe marginea dreapta a monitorului, pe toata inaltimea lui.
+fn dock_right(window: &tauri::WebviewWindow) {
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten());
+    if let Some(monitor) = monitor {
+        let msize = monitor.size();
+        let mpos = monitor.position();
+        if let Ok(wsize) = window.outer_size() {
+            // Pastram latimea curenta, dar intindem inaltimea pe tot monitorul.
+            let _ = window.set_size(tauri::PhysicalSize::new(wsize.width, msize.height));
+            let x = mpos.x + msize.width as i32 - wsize.width as i32;
+            let y = mpos.y;
+            let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
+        }
+    }
+}
+
 /// Afiseaza si focalizeaza fereastra principala (din tray sau alt instance).
 fn show_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
+        dock_right(&window);
         let _ = window.show();
         let _ = window.unminimize();
         let _ = window.set_focus();
@@ -92,6 +113,7 @@ pub fn run() {
                 if started_by_system {
                     let _ = window.hide();
                 } else {
+                    dock_right(&window);
                     let _ = window.show();
                 }
             }
