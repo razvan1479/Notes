@@ -21,6 +21,7 @@ interface Props {
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;
   onTogglePriority: (id: number) => void;
+  onOpenReminder: (id: number) => void;
   // Drag & drop (doar pentru task-urile active).
   draggable?: boolean;
   onDragStart?: (id: number) => void;
@@ -202,12 +203,45 @@ export function TaskItem(props: Props) {
               </span>
             </>
           )}
+          {task.reminderAt != null && !task.completed && (
+            <>
+              <span className="task__meta-sep">·</span>
+              <span className="task__reminder" title={t("task.reminder_at", { date: formatDateTime(task.reminderAt, locale) })}>
+                <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+                  <path d="M8 2a3.2 3.2 0 0 0-3.2 3.2c0 3-1.3 4-1.3 4h9c0 0-1.3-1-1.3-4A3.2 3.2 0 0 0 8 2zM6.6 12a1.4 1.4 0 0 0 2.8 0" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {formatDateTime(task.reminderAt, locale)}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
       {task.completed && task.completedAt != null && (
         <ExpiryIndicator completedAt={task.completedAt} now={now} />
       )}
+
+      <button
+        className={`task__prio-btn ${task.reminderAt != null ? "task__prio-btn--on" : ""}`}
+        style={task.reminderAt != null ? { color: "var(--accent)" } : undefined}
+        aria-label={t("task.reminder")}
+        title={t("task.reminder")}
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onOpenReminder(task.id);
+        }}
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path
+            d="M8 1.6a3.6 3.6 0 0 0-3.6 3.6c0 3.4-1.5 4.4-1.5 4.4h10.2c0 0-1.5-1-1.5-4.4A3.6 3.6 0 0 0 8 1.6zM6.4 12.4a1.6 1.6 0 0 0 3.2 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
       <button
         className={`task__prio-btn ${task.priority ? "task__prio-btn--on" : ""}`}

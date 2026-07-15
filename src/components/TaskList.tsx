@@ -16,6 +16,7 @@ interface Props {
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;
   onTogglePriority: (id: number) => void;
+  onOpenReminder: (id: number) => void;
   onReorderActive: (orderedActiveIds: number[]) => void;
 }
 
@@ -56,6 +57,7 @@ export function TaskList(props: Props) {
       onEditText={props.onEditText}
       onDelete={props.onDelete}
       onTogglePriority={props.onTogglePriority}
+      onOpenReminder={props.onOpenReminder}
       draggable={allowDrag}
       onDragStart={setDragId}
       onDragOver={setOverId}

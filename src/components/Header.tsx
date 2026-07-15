@@ -10,6 +10,7 @@ interface Props {
   updateAvailable: boolean;
   onToggleSearch: () => void;
   onToggleTheme: () => void;
+  onOpenCalendar: () => void;
   onCheckUpdate: () => void;
   onOpenSettings: () => void;
 }
@@ -20,6 +21,7 @@ export function Header({
   updateAvailable,
   onToggleSearch,
   onToggleTheme,
+  onOpenCalendar,
   onCheckUpdate,
   onOpenSettings,
 }: Props) {
@@ -71,6 +73,20 @@ export function Header({
               />
             </svg>
           )}
+        </button>
+
+        <button
+          className="icon-btn"
+          onClick={onOpenCalendar}
+          aria-label={t("header.calendar")}
+          title={t("header.calendar")}
+        >
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+            <rect x="2.5" y="4" width="15" height="13.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="2" />
+            <line x1="2.5" y1="8" x2="17.5" y2="8" stroke="currentColor" strokeWidth="2" />
+            <line x1="6.5" y1="2.5" x2="6.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <line x1="13.5" y1="2.5" x2="13.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         </button>
 
         <button

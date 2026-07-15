@@ -12,6 +12,7 @@ import {
   persistOrder,
   setTaskCompleted,
   setTaskPriority,
+  setTaskReminder,
   updateTaskText,
 } from "../db/database";
 import { isExpired } from "../lib/time";
@@ -106,6 +107,12 @@ export function useTasks() {
     await setTaskPriority(id, next);
   }, []);
 
+  /** Seteaza sau sterge (null) reminderul unui task. */
+  const setReminder = useCallback(async (id: number, reminderAt: number | null) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, reminderAt } : t)));
+    await setTaskReminder(id, reminderAt);
+  }, []);
+
   const remove = useCallback(async (id: number) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     await dbDelete(id);
@@ -133,6 +140,7 @@ export function useTasks() {
     toggle,
     remove,
     togglePriority,
+    setReminder,
     reorderActive,
     tasksRef,
   };

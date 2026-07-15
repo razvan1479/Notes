@@ -8,11 +8,15 @@ import { SearchBar } from "./components/SearchBar";
 import { TaskList } from "./components/TaskList";
 import { Settings } from "./components/Settings";
 import { UpdatePopup } from "./components/UpdatePopup";
+import { ReminderDialog } from "./components/ReminderDialog";
+import { CalendarModal } from "./components/CalendarModal";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
+import { useReminders } from "./hooks/useReminders";
+import { useI18n } from "./i18n/i18n";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
 function norm(s: string): string {
@@ -23,15 +27,20 @@ function norm(s: string): string {
 }
 
 export default function App() {
-  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, reorderActive } = useTasks();
+  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, reorderActive, tasksRef } = useTasks();
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
+  const { t } = useI18n();
+  const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
+  useReminders(tasksRef, clearReminder, t("reminder.title"));
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // Cand se gaseste un update (inclusiv la verificarea automata de la pornire),
@@ -107,6 +116,7 @@ export default function App() {
         updateAvailable={update.status.kind === "available"}
         onToggleSearch={() => (searchOpen ? closeSearch() : openSearch())}
         onToggleTheme={toggleTheme}
+        onOpenCalendar={() => setCalendarOpen(true)}
         onCheckUpdate={() => {
           setUpdateOpen(true);
           update.checkNow(false);
@@ -135,6 +145,7 @@ export default function App() {
           onEditText={editText}
           onDelete={remove}
           onTogglePriority={togglePriority}
+          onOpenReminder={(id) => setReminderTaskId(id)}
           onReorderActive={reorderActive}
         />
       )}
@@ -156,6 +167,23 @@ export default function App() {
           onRetry={() => update.checkNow(false)}
         />
       )}
+
+      {calendarOpen && (
+        <CalendarModal tasks={tasks} onClose={() => setCalendarOpen(false)} />
+      )}
+
+      {reminderTaskId != null && (() => {
+        const task = tasks.find((t) => t.id === reminderTaskId);
+        if (!task) return null;
+        return (
+          <ReminderDialog
+            task={task}
+            onSet={setReminder}
+            onClear={(id) => setReminder(id, null)}
+            onClose={() => setReminderTaskId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

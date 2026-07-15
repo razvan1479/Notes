@@ -24,15 +24,21 @@ async function getDb(): Promise<Database> {
           created_at   INTEGER NOT NULL,
           completed_at INTEGER,
           position     INTEGER NOT NULL DEFAULT 0,
-          priority     INTEGER NOT NULL DEFAULT 0
+          priority     INTEGER NOT NULL DEFAULT 0,
+          reminder_at  INTEGER
         );
       `);
-      // Migrare pentru bazele create inainte de coloana "priority".
+      // Migrari pentru bazele create inainte de coloanele noi.
       // SQLite nu are ADD COLUMN IF NOT EXISTS, deci ignoram eroarea daca exista deja.
       try {
         await db.execute(
           `ALTER TABLE tasks ADD COLUMN priority INTEGER NOT NULL DEFAULT 0;`
         );
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN reminder_at INTEGER;`);
       } catch {
         /* coloana exista deja */
       }
@@ -60,6 +66,7 @@ function rowToTask(r: TaskRow): Task {
     completedAt: r.completed_at == null ? null : Number(r.completed_at),
     position: Number(r.position),
     priority: Number(r.priority) === 1,
+    reminderAt: r.reminder_at == null ? null : Number(r.reminder_at),
   };
 }
 
@@ -94,6 +101,7 @@ export async function addTask(text: string): Promise<Task> {
     completedAt: null,
     position: nextPos,
     priority: false,
+    reminderAt: null,
   };
 }
 
@@ -115,6 +123,12 @@ export async function setTaskCompleted(id: number, completed: boolean): Promise<
     `UPDATE tasks SET completed = $1, completed_at = $2 WHERE id = $3;`,
     [completed ? 1 : 0, completedAt, id]
   );
+}
+
+/** Seteaza (sau sterge, cu null) momentul de reminder pentru un task. */
+export async function setTaskReminder(id: number, reminderAt: number | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET reminder_at = $1 WHERE id = $2;`, [reminderAt, id]);
 }
 
 /** Marcheaza / demarcheaza un task ca prioritar. */

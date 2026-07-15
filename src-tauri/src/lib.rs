@@ -92,6 +92,8 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Necesar pentru relansarea aplicatiei dupa instalarea update-ului.
         .plugin(tauri_plugin_process::init())
+        // Notificari native pentru memento-uri (reminders).
+        .plugin(tauri_plugin_notification::init())
         // Pornire automata cu Windows. Fara argumentul "--minimized", ca
         // aplicatia sa se deschida VIZIBIL la logare (lipita dreapta), nu
         // ascunsa in tray.
