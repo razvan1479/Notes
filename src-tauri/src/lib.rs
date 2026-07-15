@@ -11,8 +11,48 @@ use tauri::{
 };
 use tauri_plugin_autostart::MacosLauncher;
 
-/// Aseaza fereastra pe marginea dreapta a monitorului, pe toata inaltimea lui.
+/// Aseaza fereastra pe marginea dreapta a ecranului, pe toata inaltimea UTILA
+/// (adica pana la taskbar, nu peste el). Pe Windows citim zona utila reala;
+/// daca nu reusim, cadem pe inaltimea totala a monitorului.
 fn dock_right(window: &tauri::WebviewWindow) {
+    let w = match window.outer_size() {
+        Ok(size) => size.width as i32,
+        Err(_) => return,
+    };
+
+    // ---- Windows: zona utila (fara taskbar) ----
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::Foundation::RECT;
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            SystemParametersInfoW, SPI_GETWORKAREA,
+        };
+
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+        let ok = unsafe {
+            SystemParametersInfoW(
+                SPI_GETWORKAREA,
+                0,
+                &mut rect as *mut RECT as *mut core::ffi::c_void,
+                0,
+            )
+        };
+        if ok != 0 {
+            let height = (rect.bottom - rect.top).max(1);
+            let x = rect.right - w;
+            let y = rect.top;
+            let _ = window.set_size(tauri::PhysicalSize::new(w as u32, height as u32));
+            let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
+            return;
+        }
+    }
+
+    // ---- Rezerva: inaltimea totala a monitorului ----
     let monitor = window
         .current_monitor()
         .ok()
@@ -21,13 +61,10 @@ fn dock_right(window: &tauri::WebviewWindow) {
     if let Some(monitor) = monitor {
         let msize = monitor.size();
         let mpos = monitor.position();
-        if let Ok(wsize) = window.outer_size() {
-            // Pastram latimea curenta, dar intindem inaltimea pe tot monitorul.
-            let _ = window.set_size(tauri::PhysicalSize::new(wsize.width, msize.height));
-            let x = mpos.x + msize.width as i32 - wsize.width as i32;
-            let y = mpos.y;
-            let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
-        }
+        let x = mpos.x + msize.width as i32 - w;
+        let y = mpos.y;
+        let _ = window.set_size(tauri::PhysicalSize::new(w as u32, msize.height));
+        let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
     }
 }
 

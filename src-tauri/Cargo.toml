@@ -23,6 +23,13 @@ tauri-plugin-process = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+# Doar pe Windows: pentru a citi zona utila a ecranului (fara taskbar).
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
 # Optimizari pentru un binar de release cat mai mic (consum redus).
 [profile.release]
 # Reglat pentru COMPILARE RAPIDA (deploy scurt), nu pentru binar minim.
