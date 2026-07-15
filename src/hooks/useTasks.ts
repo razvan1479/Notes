@@ -1,6 +1,6 @@
 // Hook central care gestioneaza toata starea task-urilor:
 // incarcare, adaugare, editare, bifare, stergere, reordonare si
-// "maturarea" automata a task-urilor bifate mai vechi de 8h.
+// "maturarea" automata a task-urilor bifate mai vechi de 4h.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Task } from "../types";
@@ -52,7 +52,7 @@ export function useTasks() {
   }, []);
 
   // Bataia de ceas: la fiecare TICK_MS actualizam "now" (pentru countdown)
-  // si stergem task-urile care tocmai au depasit 8h. Ruleaza si cand
+  // si stergem task-urile care tocmai au depasit 4h. Ruleaza si cand
   // fereastra e ascunsa in tray, pentru ca webview-ul ramane activ.
   useEffect(() => {
     const tick = () => {
