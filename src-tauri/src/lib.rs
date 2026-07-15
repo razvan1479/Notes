@@ -55,11 +55,12 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Necesar pentru relansarea aplicatiei dupa instalarea update-ului.
         .plugin(tauri_plugin_process::init())
-        // Pornire automata cu Windows. Argumentul "--minimized" este adaugat
-        // la comanda de lansare, ca sa stim ca pornirea a venit de la sistem.
+        // Pornire automata cu Windows. Fara argumentul "--minimized", ca
+        // aplicatia sa se deschida VIZIBIL la logare (lipita dreapta), nu
+        // ascunsa in tray.
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
-            Some(vec!["--minimized"]),
+            None,
         ))
         .setup(|app| {
             // ---- Meniul din tray ----
@@ -105,17 +106,11 @@ pub fn run() {
                     }
                 });
 
-                // ---- Pornire minimizata la boot ----
-                // Daca lansarea a venit de la Windows (autostart), fereastra
-                // ramane ascunsa in tray. Altfel, o afisam normal.
-                let started_by_system =
-                    std::env::args().any(|arg| arg == "--minimized");
-                if started_by_system {
-                    let _ = window.hide();
-                } else {
-                    dock_right(&window);
-                    let _ = window.show();
-                }
+                // ---- Afisare la pornire ----
+                // Aplicatia se deschide vizibil, lipita pe dreapta monitorului,
+                // atat la lansare manuala cat si la pornirea automata cu Windows.
+                dock_right(&window);
+                let _ = window.show();
             }
 
             Ok(())

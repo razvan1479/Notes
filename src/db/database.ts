@@ -46,16 +46,20 @@ async function getDb(): Promise<Database> {
   return dbPromise;
 }
 
-/** Transforma randul brut din SQLite in obiectul Task tipizat. */
+/** Transforma randul brut din SQLite in obiectul Task tipizat.
+ *  Folosim conversii tolerante (Number(...)) fiindca driver-ul SQLite poate
+ *  intoarce valorile ca numar, sir ("1") sau bigint. O comparatie stricta
+ *  (=== 1) ar rata cazul sir si ar face task-urile bifate sa reapara active
+ *  dupa repornire. */
 function rowToTask(r: TaskRow): Task {
   return {
-    id: r.id,
-    text: r.text,
-    completed: r.completed === 1,
-    createdAt: r.created_at,
-    completedAt: r.completed_at,
-    position: r.position,
-    priority: r.priority === 1,
+    id: Number(r.id),
+    text: r.text ?? "",
+    completed: Number(r.completed) === 1,
+    createdAt: Number(r.created_at),
+    completedAt: r.completed_at == null ? null : Number(r.completed_at),
+    position: Number(r.position),
+    priority: Number(r.priority) === 1,
   };
 }
 
