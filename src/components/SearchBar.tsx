@@ -1,6 +1,7 @@
 // Bara de cautare instantanee. Filtreaza in timp real dupa continut.
 
 import { forwardRef } from "react";
+import { useI18n } from "../i18n/i18n";
 
 interface Props {
   value: string;
@@ -10,6 +11,7 @@ interface Props {
 
 export const SearchBar = forwardRef<HTMLInputElement, Props>(
   ({ value, onChange, onClose }, ref) => {
+    const { t } = useI18n();
     return (
       <div className="search">
         <svg className="search__icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
@@ -20,7 +22,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(
           ref={ref}
           className="search__input"
           type="text"
-          placeholder="Cauta task-uri…"
+          placeholder={t("search.placeholder")}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
@@ -31,7 +33,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(
           }}
         />
         {value && (
-          <button className="search__clear" onClick={() => onChange("")} aria-label="Sterge cautarea">
+          <button className="search__clear" onClick={() => onChange("")} aria-label={t("search.clear")}>
             ×
           </button>
         )}

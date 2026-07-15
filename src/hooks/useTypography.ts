@@ -13,7 +13,7 @@ export interface FontOption {
 }
 
 export const FONT_OPTIONS: FontOption[] = [
-  { id: "system", label: "Sistem", stack: "" },
+  { id: "system", label: "System", stack: "" },
   { id: "verdana", label: "Verdana", stack: "Verdana, Geneva, sans-serif" },
   { id: "georgia", label: "Georgia", stack: "Georgia, 'Times New Roman', serif" },
   { id: "consolas", label: "Consolas", stack: "Consolas, 'Courier New', monospace" },

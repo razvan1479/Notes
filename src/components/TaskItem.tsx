@@ -2,6 +2,7 @@
 // creare/finalizare si indicatorul circular de expirare (semnatura app-ului).
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "../i18n/i18n";
 import type { Task } from "../types";
 import {
   AUTO_DELETE_MS,
@@ -32,6 +33,7 @@ interface Props {
 
 /** Inel circular care arata cat din cele 8h a trecut, plus timpul ramas. */
 function ExpiryIndicator({ completedAt, now }: { completedAt: number; now: number }) {
+  const { t } = useI18n();
   const remaining = msUntilExpiry(completedAt, now) ?? 0;
   const fraction = Math.max(0, Math.min(1, remaining / AUTO_DELETE_MS));
   const warning = remaining <= WARNING_MS;
@@ -43,7 +45,7 @@ function ExpiryIndicator({ completedAt, now }: { completedAt: number; now: numbe
   return (
     <span
       className={`expiry ${warning ? "expiry--warning" : ""}`}
-      title={`Se sterge automat in ${formatCountdown(remaining)}`}
+      title={t("task.autodelete", { time: formatCountdown(remaining) })}
     >
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
         <circle className="expiry__track" cx="10" cy="10" r={R} />
@@ -63,6 +65,7 @@ function ExpiryIndicator({ completedAt, now }: { completedAt: number; now: numbe
 }
 
 export function TaskItem(props: Props) {
+  const { t, locale } = useI18n();
   const { task, now, selected } = props;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.text);
@@ -130,7 +133,7 @@ export function TaskItem(props: Props) {
         className="task__check"
         role="checkbox"
         aria-checked={task.completed}
-        aria-label={task.completed ? "Debifeaza" : "Bifeaza"}
+        aria-label={task.completed ? t("task.uncheck") : t("task.check")}
         onClick={(e) => {
           e.stopPropagation();
           props.onToggle(task.id);
@@ -151,7 +154,7 @@ export function TaskItem(props: Props) {
       </button>
 
       {task.priority && (
-        <span className="task__prio" title="Task prioritar" aria-label="Prioritar">
+        <span className="task__prio" title={t("task.priority_mark")} aria-label={t("task.priority_mark")}>
           !
         </span>
       )}
@@ -183,19 +186,19 @@ export function TaskItem(props: Props) {
               setEditing(true);
             }}
           >
-            {task.text || <span className="task__placeholder">(gol — dublu-click pentru editare)</span>}
+            {task.text || <span className="task__placeholder">{t("task.empty_placeholder")}</span>}
           </span>
         )}
 
         <div className="task__meta">
-          <span title={`Creat: ${formatDateTime(task.createdAt)}`}>
-            Creat {formatDateTime(task.createdAt)}
+          <span title={t("task.created_title", { date: formatDateTime(task.createdAt, locale) })}>
+            {t("task.created", { date: formatDateTime(task.createdAt, locale) })}
           </span>
           {task.completed && task.completedAt != null && (
             <>
               <span className="task__meta-sep">·</span>
-              <span title={`Finalizat: ${formatDateTime(task.completedAt)}`}>
-                Finalizat {formatDateTime(task.completedAt)}
+              <span title={t("task.completed_title", { date: formatDateTime(task.completedAt, locale) })}>
+                {t("task.completed", { date: formatDateTime(task.completedAt, locale) })}
               </span>
             </>
           )}
@@ -208,9 +211,9 @@ export function TaskItem(props: Props) {
 
       <button
         className={`task__prio-btn ${task.priority ? "task__prio-btn--on" : ""}`}
-        aria-label={task.priority ? "Scoate prioritatea" : "Marcheaza prioritar"}
+        aria-label={task.priority ? t("task.priority_on") : t("task.priority_off")}
         aria-pressed={task.priority}
-        title={task.priority ? "Scoate prioritatea" : "Marcheaza prioritar"}
+        title={task.priority ? t("task.priority_on") : t("task.priority_off")}
         onClick={(e) => {
           e.stopPropagation();
           props.onTogglePriority(task.id);
@@ -230,8 +233,8 @@ export function TaskItem(props: Props) {
 
       <button
         className="task__delete"
-        aria-label="Sterge nota"
-        title="Sterge nota"
+        aria-label={t("task.delete")}
+        title={t("task.delete")}
         onClick={(e) => {
           e.stopPropagation();
           props.onDelete(task.id);

@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { check, type Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { useI18n } from "../i18n/i18n";
 
 export type UpdateStatus =
   | { kind: "idle" }
@@ -21,6 +22,7 @@ function isTauri(): boolean {
 }
 
 export function useUpdate() {
+  const { t } = useI18n();
   const [status, setStatus] = useState<UpdateStatus>({ kind: "idle" });
   const updateRef = useRef<Update | null>(null);
 
@@ -29,7 +31,7 @@ export function useUpdate() {
       if (!silent) {
         setStatus({
           kind: "error",
-          message: "Update-ul functioneaza doar in aplicatia instalata.",
+          message: t("update.err_not_installed"),
         });
       }
       return;
@@ -51,10 +53,10 @@ export function useUpdate() {
       else
         setStatus({
           kind: "error",
-          message: e instanceof Error ? e.message : "Verificarea a esuat.",
+          message: e instanceof Error ? e.message : t("update.err_check"),
         });
     }
-  }, []);
+  }, [t]);
 
   const install = useCallback(async () => {
     const update = updateRef.current;
@@ -86,10 +88,10 @@ export function useUpdate() {
       console.error(e);
       setStatus({
         kind: "error",
-        message: e instanceof Error ? e.message : "Instalarea a esuat.",
+        message: e instanceof Error ? e.message : t("update.err_install"),
       });
     }
-  }, []);
+  }, [t]);
 
   // Verificare automata, o data, la pornirea aplicatiei.
   useEffect(() => {

@@ -598,6 +598,17 @@ body {
   display: block;
 }
 
+/* In randurile-bloc, titlul si descrierea stau pe linii separate. */
+.settings__row--block > .settings__title {
+  display: block;
+}
+
+.settings__row--block > .settings__desc {
+  display: block;
+  margin-top: 3px;
+  max-width: none;
+}
+
 /* ---------- Typography fields ---------- */
 .type-field {
   margin-top: 12px;

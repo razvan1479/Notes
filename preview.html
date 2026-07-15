@@ -661,21 +661,21 @@ body { background: var(--bg); }
   <div class="app">
     <header class="header">
       <div class="header__title">
-        <h1>Task-uri</h1>
+        <h1>Tasks</h1>
         <span class="header__count">3 active</span>
       </div>
       <div class="header__actions">
-        <button class="icon-btn" title="Cauta">
+        <button class="icon-btn" title="Search (Ctrl+F)">
           <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="13.5" y1="13.5" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <button class="icon-btn" id="themeBtn" title="Schimba tema">
+        <button class="icon-btn" id="themeBtn" title="Toggle theme">
           <svg viewBox="0 0 20 20" width="18" height="18"><path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5z" fill="currentColor"/></svg>
         </button>
-        <button class="icon-btn icon-btn--update" id="updateBtn" title="Verifica update">
+        <button class="icon-btn icon-btn--update" id="updateBtn" title="Check for updates">
           <svg viewBox="0 0 20 20" width="18" height="18"><path d="M16.5 6.5A7 7 0 1 0 17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3v3.7h-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="icon-btn__badge"></span>
         </button>
-        <button class="icon-btn" title="Setari">
+        <button class="icon-btn" title="Settings">
           <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 1.5v2M10 16.5v2M18.5 10h-2M3.5 10h-2M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4M15.8 15.8l-1.4-1.4M5.6 5.6L4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -683,7 +683,7 @@ body { background: var(--bg); }
 
     <div class="add">
       <span class="add__plus">+</span>
-      <input class="add__input" placeholder="Adauga un task si apasa Enter…" />
+      <input class="add__input" placeholder="Add a task and press Enter…" />
     </div>
 
     <div class="list">
@@ -713,7 +713,7 @@ body { background: var(--bg); }
       </section>
 
       <section class="list__section">
-        <div class="list__divider"><span>Finalizate</span><span class="list__count">2</span></div>
+        <div class="list__divider"><span>Completed</span><span class="list__count">2</span></div>
 
         <div class="task task--done">
           <button class="task__check" role="checkbox" aria-checked="true">

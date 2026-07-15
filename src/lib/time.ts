@@ -45,9 +45,9 @@ export function formatCountdown(ms: number): string {
   return `${s}s`;
 }
 
-/** Data + ora lizibila, format romanesc, ex: "14 iul. 2026, 09:42". */
-export function formatDateTime(ms: number): string {
-  return new Date(ms).toLocaleString("ro-RO", {
+/** Data + ora lizibila, in functie de locale (ex. "en-US" / "ro-RO"). */
+export function formatDateTime(ms: number, locale = "en-US"): string {
+  return new Date(ms).toLocaleString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -57,8 +57,8 @@ export function formatDateTime(ms: number): string {
 }
 
 /** Doar ora, ex: "09:42". */
-export function formatTime(ms: number): string {
-  return new Date(ms).toLocaleTimeString("ro-RO", {
+export function formatTime(ms: number, locale = "en-US"): string {
+  return new Date(ms).toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });

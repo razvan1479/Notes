@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
+import { useI18n } from "../i18n/i18n";
 
 interface Props {
   tasks: Task[]; // deja filtrate dupa cautare
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function TaskList(props: Props) {
+  const { t } = useI18n();
   const { tasks } = props;
   const [dragId, setDragId] = useState<number | null>(null);
   const [overId, setOverId] = useState<number | null>(null);
@@ -74,11 +76,11 @@ export function TaskList(props: Props) {
       {empty && (
         <div className="empty">
           {props.hasQuery ? (
-            <p>Niciun task nu se potriveste cautarii.</p>
+            <p>{t("list.empty_search")}</p>
           ) : (
             <>
-              <p className="empty__title">Nimic de facut deocamdata</p>
-              <p className="empty__hint">Scrie mai sus si apasa Enter ca sa adaugi primul task.</p>
+              <p className="empty__title">{t("list.empty_title")}</p>
+              <p className="empty__hint">{t("list.empty_hint")}</p>
             </>
           )}
         </div>
@@ -93,7 +95,7 @@ export function TaskList(props: Props) {
       {completed.length > 0 && (
         <section className="list__section">
           <div className="list__divider">
-            <span>Finalizate</span>
+            <span>{t("list.completed")}</span>
             <span className="list__count">{completed.length}</span>
           </div>
           {completed.map((t) => renderItem(t, false))}

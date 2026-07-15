@@ -2,6 +2,7 @@
 // cautare, comutare tema si setari.
 
 import type { ThemeMode } from "../types";
+import { useI18n } from "../i18n/i18n";
 
 interface Props {
   activeCount: number;
@@ -22,17 +23,18 @@ export function Header({
   onCheckUpdate,
   onOpenSettings,
 }: Props) {
+  const { t } = useI18n();
   return (
     <header className="header">
       <div className="header__title">
-        <h1>Task-uri</h1>
+        <h1>{t("header.title")}</h1>
         <span className="header__count">
-          {activeCount} {activeCount === 1 ? "activ" : "active"}
+          {t(activeCount === 1 ? "header.active_one" : "header.active_other", { n: activeCount })}
         </span>
       </div>
 
       <div className="header__actions">
-        <button className="icon-btn" onClick={onToggleSearch} aria-label="Cauta (Ctrl+F)" title="Cauta (Ctrl+F)">
+        <button className="icon-btn" onClick={onToggleSearch} aria-label={t("header.search")} title={t("header.search")}>
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
             <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
             <line x1="13.5" y1="13.5" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -42,8 +44,8 @@ export function Header({
         <button
           className="icon-btn"
           onClick={onToggleTheme}
-          aria-label="Schimba tema"
-          title="Schimba tema"
+          aria-label={t("header.theme")}
+          title={t("header.theme")}
         >
           {theme === "dark" ? (
             // soare
@@ -74,8 +76,8 @@ export function Header({
         <button
           className="icon-btn icon-btn--update"
           onClick={onCheckUpdate}
-          aria-label="Verifica update"
-          title="Verifica update"
+          aria-label={t("header.update")}
+          title={t("header.update")}
         >
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
             <path
@@ -97,7 +99,7 @@ export function Header({
           {updateAvailable && <span className="icon-btn__badge" aria-hidden="true" />}
         </button>
 
-        <button className="icon-btn" onClick={onOpenSettings} aria-label="Setari" title="Setari">
+        <button className="icon-btn" onClick={onOpenSettings} aria-label={t("header.settings")} title={t("header.settings")}>
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
             <circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" strokeWidth="2" />
             <path
