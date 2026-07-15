@@ -1,5 +1,8 @@
-// Pop-up de update, deschis din butonul de langa Setari. Arata clar starea:
-// "esti la zi", "versiune noua disponibila" (cu Instaleaza), progres, eroare.
+// Pop-up de update. Cand exista o versiune noua ("available"/descarcare/
+// instalare) devine OBLIGATORIU: nu se poate inchide, nu are "Mai tarziu" —
+// doar "Instaleaza acum". Apare singur la pornire daca s-a gasit un update.
+// Exceptie de siguranta: daca instalarea da eroare, oferim Reincearca + Inchide,
+// ca sa nu ramai blocat pe un release stricat.
 
 import type { UpdateStatus } from "../hooks/useUpdate";
 
@@ -7,11 +10,18 @@ interface Props {
   status: UpdateStatus;
   onInstall: () => void;
   onClose: () => void;
+  onRetry: () => void;
 }
 
-export function UpdatePopup({ status, onInstall, onClose }: Props) {
+export function UpdatePopup({ status, onInstall, onClose, onRetry }: Props) {
+  // Cat timp exista un update in lucru, pop-up-ul e obligatoriu.
+  const forced =
+    status.kind === "available" ||
+    status.kind === "downloading" ||
+    status.kind === "installing";
+
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay" onClick={forced ? undefined : onClose}>
       <div className="popup" onClick={(e) => e.stopPropagation()}>
         <div className="popup__icon" aria-hidden="true">
           {icon(status)}
@@ -31,9 +41,25 @@ export function UpdatePopup({ status, onInstall, onClose }: Props) {
               Instaleaza acum
             </button>
           )}
-          <button className="popup__btn" onClick={onClose}>
-            {status.kind === "available" ? "Mai tarziu" : "Inchide"}
-          </button>
+
+          {status.kind === "error" && (
+            <>
+              <button className="popup__btn popup__btn--primary" onClick={onRetry}>
+                Reincearca
+              </button>
+              <button className="popup__btn" onClick={onClose}>
+                Inchide
+              </button>
+            </>
+          )}
+
+          {(status.kind === "uptodate" || status.kind === "checking") && (
+            <button className="popup__btn" onClick={onClose}>
+              Inchide
+            </button>
+          )}
+
+          {/* Pentru downloading / installing nu exista buton: e in curs. */}
         </div>
       </div>
     </div>
@@ -45,7 +71,7 @@ function title(status: UpdateStatus): string {
     case "checking":
       return "Se verifica…";
     case "available":
-      return "Versiune noua disponibila";
+      return "Update obligatoriu";
     case "downloading":
       return "Se descarca…";
     case "installing":
@@ -64,7 +90,7 @@ function message(status: UpdateStatus): string {
     case "checking":
       return "Caut versiuni noi pe GitHub.";
     case "available":
-      return `Versiunea ${status.version} e gata de instalat. Aplicatia se va relansa dupa instalare.`;
+      return `A aparut versiunea ${status.version}. Trebuie instalata pentru a continua. Aplicatia se va relansa dupa instalare.`;
     case "downloading":
       return `Descarcare in curs… ${status.percent}%`;
     case "installing":
@@ -96,7 +122,6 @@ function icon(status: UpdateStatus) {
       </svg>
     );
   }
-  // available / checking / downloading / installing: sageata de update
   return (
     <svg {...common}>
       <path d="M12 3v11M7.5 9.5L12 14l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

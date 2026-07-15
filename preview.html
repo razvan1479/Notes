@@ -766,13 +766,12 @@ body { background: var(--bg); }
       ov.innerHTML =
         '<div class="popup">' +
         '  <div class="popup__icon"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M12 3v11M7.5 9.5L12 14l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>' +
-        '  <h2 class="popup__title">Versiune noua disponibila</h2>' +
-        '  <p class="popup__msg">Versiunea 1.0.4 e gata de instalat. Aplicatia se va relansa dupa instalare.</p>' +
-        '  <div class="popup__actions"><button class="popup__btn popup__btn--primary">Instaleaza acum</button><button class="popup__btn" id="popupClose">Mai tarziu</button></div>' +
+        '  <h2 class="popup__title">Update obligatoriu</h2>' +
+        '  <p class="popup__msg">A aparut versiunea 1.0.4. Trebuie instalata pentru a continua. Aplicatia se va relansa dupa instalare.</p>' +
+        '  <div class="popup__actions"><button class="popup__btn popup__btn--primary">Instaleaza acum</button></div>' +
         '</div>';
       ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
       document.body.appendChild(ov);
-      ov.querySelector('#popupClose').addEventListener('click', function () { ov.remove(); });
     });
   }
 

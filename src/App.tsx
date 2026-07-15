@@ -34,6 +34,12 @@ export default function App() {
   const [updateOpen, setUpdateOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
+  // Cand se gaseste un update (inclusiv la verificarea automata de la pornire),
+  // deschidem singuri pop-up-ul obligatoriu.
+  useEffect(() => {
+    if (update.status.kind === "available") setUpdateOpen(true);
+  }, [update.status.kind]);
+
   const addInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -147,6 +153,7 @@ export default function App() {
           status={update.status}
           onInstall={update.install}
           onClose={() => setUpdateOpen(false)}
+          onRetry={() => update.checkNow(false)}
         />
       )}
     </div>
