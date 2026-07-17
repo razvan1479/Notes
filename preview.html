@@ -161,6 +161,23 @@ body {
 }
 .popup__btn--primary { border: none; background: var(--accent); color: #fff; }
 
+
+/* ---------- Gamification ---------- */
+.game-wrap { position: relative; margin-bottom: 6px; }
+.game {
+  display: flex; flex-direction: column; gap: 8px; width: 100%;
+  padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); cursor: pointer; font-family: inherit;
+}
+.game:hover { border-color: var(--accent); }
+.game__top { display: flex; align-items: center; gap: 6px; }
+.game__badge-name { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.game__row { display: flex; align-items: center; gap: 10px; }
+.game__level { flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--accent); min-width: 34px; }
+.game__bar { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.game__fill { display: block; height: 100%; border-radius: 3px; background: var(--xp-fill, var(--accent)); }
+.game__xp { flex-shrink: 0; font-size: 11px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
 /* ---------- Add input ---------- */
 .add {
   display: flex;
@@ -400,6 +417,23 @@ body {
   opacity: 0;
   transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
+.task__prio {
+  flex-shrink: 0; align-self: flex-start; margin-top: 1px;
+  display: grid; place-items: center; width: 18px; height: 18px;
+  border-radius: 6px; background: var(--danger-soft); color: var(--danger);
+  font-weight: 800; font-size: 14px; line-height: 1;
+}
+.task--priority:not(.task--done) { border-left-color: var(--danger); }
+.task__prio-btn {
+  flex-shrink: 0; align-self: center; display: grid; place-items: center;
+  width: 26px; height: 26px; border: none; border-radius: 7px;
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  opacity: 0; transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.task:hover .task__prio-btn { opacity: 1; }
+.task__prio-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.task__prio-btn--on { opacity: 1; color: var(--danger); }
+.task__prio-btn--on:hover { background: var(--danger-soft); color: var(--danger); }
 
 .task:hover .task__delete,
 .task__delete:focus-visible {
@@ -644,35 +678,50 @@ body { background: var(--bg); }
   <div class="app">
     <header class="header">
       <div class="header__title">
-        <h1>Task-uri</h1>
+        <h1>Tasks</h1>
         <span class="header__count">3 active</span>
       </div>
       <div class="header__actions">
-        <button class="icon-btn" title="Cauta">
+        <button class="icon-btn" title="Search (Ctrl+F)">
           <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="13.5" y1="13.5" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <button class="icon-btn" id="themeBtn" title="Schimba tema">
+        <button class="icon-btn" id="themeBtn" title="Toggle theme">
           <svg viewBox="0 0 20 20" width="18" height="18"><path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5z" fill="currentColor"/></svg>
         </button>
-        <button class="icon-btn icon-btn--update" id="updateBtn" title="Verifica update">
+        <button class="icon-btn icon-btn--update" id="updateBtn" title="Check for updates">
           <svg viewBox="0 0 20 20" width="18" height="18"><path d="M16.5 6.5A7 7 0 1 0 17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3v3.7h-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="icon-btn__badge"></span>
         </button>
-        <button class="icon-btn" title="Setari">
+        <button class="icon-btn" title="Settings">
           <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 1.5v2M10 16.5v2M18.5 10h-2M3.5 10h-2M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4M15.8 15.8l-1.4-1.4M5.6 5.6L4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </header>
 
+    <div class="game-wrap">
+      <button class="game">
+        <span class="game__top">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="color:#34a0c8"><path d="M12 2l2.6 5.4 6 .9-4.3 4.2 1 6L12 15.8 6.7 18.5l1-6L3.4 8.3l6-.9z" fill="currentColor"/></svg>
+          <span class="game__badge-name" style="color:#34a0c8">Centurion</span>
+        </span>
+        <span class="game__row">
+          <span class="game__level">Lv 7</span>
+          <span class="game__bar"><span class="game__fill" style="width:64%"></span></span>
+          <span class="game__xp">128 / 200 XP</span>
+        </span>
+      </button>
+    </div>
+
     <div class="add">
       <span class="add__plus">+</span>
-      <input class="add__input" placeholder="Adauga un task si apasa Enter…" />
+      <input class="add__input" placeholder="Add a task and press Enter…" />
     </div>
 
     <div class="list">
       <section class="list__section">
-        <div class="task">
+        <div class="task task--priority">
           <button class="task__check" role="checkbox" aria-checked="false"></button>
+          <span class="task__prio" title="Task prioritar">!</span>
           <div class="task__body">
             <span class="task__text">Finalizez dashboard-ul pentru Sir Penguin</span>
             <div class="task__meta"><span>Creat 14 iul. 2026, 09:12</span></div>
@@ -695,7 +744,7 @@ body { background: var(--bg); }
       </section>
 
       <section class="list__section">
-        <div class="list__divider"><span>Finalizate</span><span class="list__count">2</span></div>
+        <div class="list__divider"><span>Completed</span><span class="list__count">2</span></div>
 
         <div class="task task--done">
           <button class="task__check" role="checkbox" aria-checked="true">
@@ -748,17 +797,37 @@ body { background: var(--bg); }
       ov.innerHTML =
         '<div class="popup">' +
         '  <div class="popup__icon"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M12 3v11M7.5 9.5L12 14l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>' +
-        '  <h2 class="popup__title">Versiune noua disponibila</h2>' +
-        '  <p class="popup__msg">Versiunea 1.0.4 e gata de instalat. Aplicatia se va relansa dupa instalare.</p>' +
-        '  <div class="popup__actions"><button class="popup__btn popup__btn--primary">Instaleaza acum</button><button class="popup__btn" id="popupClose">Mai tarziu</button></div>' +
+        '  <h2 class="popup__title">Update obligatoriu</h2>' +
+        '  <p class="popup__msg">A aparut versiunea 1.0.4. Trebuie instalata pentru a continua. Aplicatia se va relansa dupa instalare.</p>' +
+        '  <div class="popup__actions"><button class="popup__btn popup__btn--primary">Instaleaza acum</button></div>' +
         '</div>';
       ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
       document.body.appendChild(ov);
-      ov.querySelector('#popupClose').addEventListener('click', function () { ov.remove(); });
     });
   }
 
   document.querySelectorAll('.task').forEach(function (t) {
+    if (!t.classList.contains('task--done')) {
+      var flag = document.createElement('button');
+      flag.className = 'task__prio-btn' + (t.classList.contains('task--priority') ? ' task__prio-btn--on' : '');
+      flag.title = 'Marcheaza prioritar';
+      flag.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 14V2.5M4 3h7.5l-1.5 2.5 1.5 2.5H4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      flag.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var on = t.classList.toggle('task--priority');
+        flag.classList.toggle('task__prio-btn--on', on);
+        flag.querySelector('path').setAttribute('fill', on ? 'currentColor' : 'none');
+        var existing = t.querySelector('.task__prio');
+        if (on && !existing) {
+          var m = document.createElement('span');
+          m.className = 'task__prio'; m.title = 'Task prioritar'; m.textContent = '!';
+          t.querySelector('.task__body').insertAdjacentElement('beforebegin', m);
+        } else if (!on && existing) {
+          existing.remove();
+        }
+      });
+      t.appendChild(flag);
+    }
     var btn = document.createElement('button');
     btn.className = 'task__delete';
     btn.setAttribute('aria-label', 'Sterge nota');

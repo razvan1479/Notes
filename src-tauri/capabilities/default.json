@@ -5,6 +5,7 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:app:allow-version",
     "sql:default",
     "sql:allow-load",
     "sql:allow-execute",
@@ -14,6 +15,7 @@
     "autostart:allow-disable",
     "autostart:allow-is-enabled",
     "updater:default",
-    "process:default"
+    "process:default",
+    "notification:default"
   ]
 }

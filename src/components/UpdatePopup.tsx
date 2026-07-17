@@ -1,23 +1,58 @@
-// Pop-up de update, deschis din butonul de langa Setari. Arata clar starea:
-// "esti la zi", "versiune noua disponibila" (cu Instaleaza), progres, eroare.
+// Pop-up de update. Cand exista o versiune noua ("available"/descarcare/
+// instalare) devine OBLIGATORIU: nu se poate inchide, nu are "Mai tarziu" —
+// doar "Instaleaza acum". Apare singur la pornire daca s-a gasit un update.
+// Exceptie de siguranta: daca instalarea da eroare, oferim Reincearca + Inchide.
 
 import type { UpdateStatus } from "../hooks/useUpdate";
+import { useI18n } from "../i18n/i18n";
 
 interface Props {
   status: UpdateStatus;
   onInstall: () => void;
   onClose: () => void;
+  onRetry: () => void;
 }
 
-export function UpdatePopup({ status, onInstall, onClose }: Props) {
+export function UpdatePopup({ status, onInstall, onClose, onRetry }: Props) {
+  const { t } = useI18n();
+
+  const forced =
+    status.kind === "available" ||
+    status.kind === "downloading" ||
+    status.kind === "installing";
+
+  const title = (() => {
+    switch (status.kind) {
+      case "checking": return t("update.title_checking");
+      case "available": return t("update.title_available");
+      case "downloading": return t("update.title_downloading");
+      case "installing": return t("update.title_installing");
+      case "uptodate": return t("update.title_uptodate");
+      case "error": return t("update.title_error");
+      default: return t("update.title_default");
+    }
+  })();
+
+  const message = (() => {
+    switch (status.kind) {
+      case "checking": return t("update.msg_checking");
+      case "available": return t("update.msg_available", { v: status.version });
+      case "downloading": return t("update.msg_downloading", { p: status.percent });
+      case "installing": return t("update.msg_installing");
+      case "uptodate": return t("update.msg_uptodate");
+      case "error": return status.message;
+      default: return "";
+    }
+  })();
+
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay" onClick={forced ? undefined : onClose}>
       <div className="popup" onClick={(e) => e.stopPropagation()}>
         <div className="popup__icon" aria-hidden="true">
           {icon(status)}
         </div>
-        <h2 className="popup__title">{title(status)}</h2>
-        <p className="popup__msg">{message(status)}</p>
+        <h2 className="popup__title">{title}</h2>
+        <p className="popup__msg">{message}</p>
 
         {status.kind === "downloading" && (
           <div className="popup__bar">
@@ -28,54 +63,30 @@ export function UpdatePopup({ status, onInstall, onClose }: Props) {
         <div className="popup__actions">
           {status.kind === "available" && (
             <button className="popup__btn popup__btn--primary" onClick={onInstall}>
-              Instaleaza acum
+              {t("update.btn_install")}
             </button>
           )}
-          <button className="popup__btn" onClick={onClose}>
-            {status.kind === "available" ? "Mai tarziu" : "Inchide"}
-          </button>
+
+          {status.kind === "error" && (
+            <>
+              <button className="popup__btn popup__btn--primary" onClick={onRetry}>
+                {t("update.btn_retry")}
+              </button>
+              <button className="popup__btn" onClick={onClose}>
+                {t("update.btn_close")}
+              </button>
+            </>
+          )}
+
+          {(status.kind === "uptodate" || status.kind === "checking") && (
+            <button className="popup__btn" onClick={onClose}>
+              {t("update.btn_close")}
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
-}
-
-function title(status: UpdateStatus): string {
-  switch (status.kind) {
-    case "checking":
-      return "Se verifica…";
-    case "available":
-      return "Versiune noua disponibila";
-    case "downloading":
-      return "Se descarca…";
-    case "installing":
-      return "Se instaleaza…";
-    case "uptodate":
-      return "Esti la zi";
-    case "error":
-      return "Ceva n-a mers";
-    default:
-      return "Actualizare";
-  }
-}
-
-function message(status: UpdateStatus): string {
-  switch (status.kind) {
-    case "checking":
-      return "Caut versiuni noi pe GitHub.";
-    case "available":
-      return `Versiunea ${status.version} e gata de instalat. Aplicatia se va relansa dupa instalare.`;
-    case "downloading":
-      return `Descarcare in curs… ${status.percent}%`;
-    case "installing":
-      return "Aproape gata. Aplicatia se relanseaza singura.";
-    case "uptodate":
-      return "Ai deja cea mai noua versiune. Nu ai ce actualiza.";
-    case "error":
-      return status.message;
-    default:
-      return "";
-  }
 }
 
 function icon(status: UpdateStatus) {
@@ -96,7 +107,6 @@ function icon(status: UpdateStatus) {
       </svg>
     );
   }
-  // available / checking / downloading / installing: sageata de update
   return (
     <svg {...common}>
       <path d="M12 3v11M7.5 9.5L12 14l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

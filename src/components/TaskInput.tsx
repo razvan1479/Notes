@@ -2,12 +2,14 @@
 // gata pentru urmatorul (flux rapid de tip "brain dump").
 
 import { forwardRef, useState } from "react";
+import { useI18n } from "../i18n/i18n";
 
 interface Props {
   onAdd: (text: string) => void;
 }
 
 export const TaskInput = forwardRef<HTMLInputElement, Props>(({ onAdd }, ref) => {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
 
   const submit = () => {
@@ -26,7 +28,7 @@ export const TaskInput = forwardRef<HTMLInputElement, Props>(({ onAdd }, ref) =>
         ref={ref}
         className="add__input"
         type="text"
-        placeholder="Adauga un task si apasa Enter…"
+        placeholder={t("input.placeholder")}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {

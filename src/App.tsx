@@ -8,11 +8,18 @@ import { SearchBar } from "./components/SearchBar";
 import { TaskList } from "./components/TaskList";
 import { Settings } from "./components/Settings";
 import { UpdatePopup } from "./components/UpdatePopup";
+import { ReminderDialog } from "./components/ReminderDialog";
+import { CalendarModal } from "./components/CalendarModal";
+import { GamificationBar } from "./components/GamificationBar";
+import { AchievementsModal } from "./components/AchievementsModal";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
+import { useReminders } from "./hooks/useReminders";
+import { useGamification } from "./hooks/useGamification";
+import { useI18n } from "./i18n/i18n";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
 function norm(s: string): string {
@@ -23,16 +30,32 @@ function norm(s: string): string {
 }
 
 export default function App() {
-  const { tasks, loading, now, add, editText, toggle, remove, reorderActive } = useTasks();
+  const bonusRef = useRef<(count: number) => void>(() => {});
+  const onBonus = useCallback((count: number) => bonusRef.current(count), []);
+  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
+  const game = useGamification(tasks);
+  bonusRef.current = game.addBonus;
+  const { t } = useI18n();
+  const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
+  useReminders(tasksRef, clearReminder, t("reminder.title"));
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // Cand se gaseste un update (inclusiv la verificarea automata de la pornire),
+  // deschidem singuri pop-up-ul obligatoriu.
+  useEffect(() => {
+    if (update.status.kind === "available") setUpdateOpen(true);
+  }, [update.status.kind]);
 
   const addInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +88,16 @@ export default function App() {
     addInputRef.current?.focus();
   }, []);
 
+  // Bifarea unui task acorda XP (o singura data per task, la trecerea in "terminat").
+  const handleToggle = useCallback(
+    (id: number) => {
+      const task = tasksRef.current.find((t) => t.id === id);
+      toggle(id);
+      if (task && !task.completed) game.award(task);
+    },
+    [toggle, game, tasksRef]
+  );
+
   // Scurtaturi globale (handlere stabile, citesc selectia din ref).
   const hotkeyHandlers = useMemo(
     () => ({
@@ -79,10 +112,10 @@ export default function App() {
       },
       onToggleSelected: () => {
         const id = selectedRef.current;
-        if (id != null) toggle(id);
+        if (id != null) handleToggle(id);
       },
     }),
-    [focusAdd, openSearch, remove, toggle]
+    [focusAdd, openSearch, remove, handleToggle]
   );
   useHotkeys(hotkeyHandlers);
 
@@ -101,11 +134,22 @@ export default function App() {
         updateAvailable={update.status.kind === "available"}
         onToggleSearch={() => (searchOpen ? closeSearch() : openSearch())}
         onToggleTheme={toggleTheme}
+        onOpenCalendar={() => setCalendarOpen(true)}
         onCheckUpdate={() => {
           setUpdateOpen(true);
           update.checkNow(false);
         }}
         onOpenSettings={() => setSettingsOpen(true)}
+      />
+
+      <GamificationBar
+        level={game.level}
+        into={game.into}
+        need={game.need}
+        progress={game.progress}
+        badge={game.badge}
+        toast={game.toast}
+        onOpen={() => setAchievementsOpen(true)}
       />
 
       <TaskInput ref={addInputRef} onAdd={add} />
@@ -125,9 +169,11 @@ export default function App() {
           selectedId={selectedId}
           hasQuery={query.trim().length > 0}
           onSelect={setSelectedId}
-          onToggle={toggle}
+          onToggle={handleToggle}
           onEditText={editText}
           onDelete={remove}
+          onTogglePriority={togglePriority}
+          onOpenReminder={(id) => setReminderTaskId(id)}
           onReorderActive={reorderActive}
         />
       )}
@@ -146,8 +192,36 @@ export default function App() {
           status={update.status}
           onInstall={update.install}
           onClose={() => setUpdateOpen(false)}
+          onRetry={() => update.checkNow(false)}
         />
       )}
+
+      {calendarOpen && (
+        <CalendarModal tasks={tasks} onClose={() => setCalendarOpen(false)} />
+      )}
+
+      {achievementsOpen && (
+        <AchievementsModal
+          level={game.level}
+          xp={game.xp}
+          completed={game.completed}
+          achievements={game.achievements}
+          onClose={() => setAchievementsOpen(false)}
+        />
+      )}
+
+      {reminderTaskId != null && (() => {
+        const task = tasks.find((t) => t.id === reminderTaskId);
+        if (!task) return null;
+        return (
+          <ReminderDialog
+            task={task}
+            onSet={setReminder}
+            onClear={(id) => setReminder(id, null)}
+            onClose={() => setReminderTaskId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

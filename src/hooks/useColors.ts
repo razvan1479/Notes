@@ -10,22 +10,23 @@ const STORAGE_KEY = "quicktasks.colors";
 
 export interface ColorToken {
   key: string; // numele variabilei fara "--"
-  label: string;
+  labelKey: string; // cheia de traducere
   defaults: Record<ThemeMode, string>;
 }
 
 // Elementele personalizabile, cu valorile implicite din styles.css.
 export const COLOR_TOKENS: ColorToken[] = [
-  { key: "bg", label: "Fundal aplicatie", defaults: { light: "#fbfbfd", dark: "#131317" } },
-  { key: "surface", label: "Nota (fundal)", defaults: { light: "#ffffff", dark: "#1c1c22" } },
-  { key: "surface-2", label: "Fundal secundar", defaults: { light: "#f3f3f8", dark: "#26262e" } },
-  { key: "border", label: "Bordura", defaults: { light: "#ececf2", dark: "#2a2a33" } },
-  { key: "text", label: "Text principal", defaults: { light: "#1b1b22", dark: "#ececf2" } },
-  { key: "text-muted", label: "Text secundar", defaults: { light: "#8a8a99", dark: "#82828f" } },
-  { key: "accent", label: "Accent (cotor, butoane)", defaults: { light: "#4f6df5", dark: "#7c90ff" } },
-  { key: "done-text", label: "Text bifat", defaults: { light: "#a6a6b2", dark: "#6a6a76" } },
-  { key: "warn", label: "Avertizare (ultima ora)", defaults: { light: "#d98a25", dark: "#e9a94a" } },
-  { key: "danger", label: "Stergere", defaults: { light: "#e5484d", dark: "#f16a6e" } },
+  { key: "bg", labelKey: "color.bg", defaults: { light: "#fbfbfd", dark: "#131317" } },
+  { key: "surface", labelKey: "color.surface", defaults: { light: "#ffffff", dark: "#1c1c22" } },
+  { key: "surface-2", labelKey: "color.surface-2", defaults: { light: "#f3f3f8", dark: "#26262e" } },
+  { key: "border", labelKey: "color.border", defaults: { light: "#ececf2", dark: "#2a2a33" } },
+  { key: "text", labelKey: "color.text", defaults: { light: "#1b1b22", dark: "#ececf2" } },
+  { key: "text-muted", labelKey: "color.text-muted", defaults: { light: "#8a8a99", dark: "#82828f" } },
+  { key: "accent", labelKey: "color.accent", defaults: { light: "#4f6df5", dark: "#7c90ff" } },
+  { key: "xp-fill", labelKey: "color.xp-fill", defaults: { light: "#4f6df5", dark: "#7c90ff" } },
+  { key: "done-text", labelKey: "color.done-text", defaults: { light: "#a6a6b2", dark: "#6a6a76" } },
+  { key: "warn", labelKey: "color.warn", defaults: { light: "#d98a25", dark: "#e9a94a" } },
+  { key: "danger", labelKey: "color.danger", defaults: { light: "#e5484d", dark: "#f16a6e" } },
 ];
 
 type Overrides = Record<string, string>;

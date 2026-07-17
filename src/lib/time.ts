@@ -3,7 +3,7 @@
 // inchisa intre timp: la repornire recalculam pur si simplu diferenta.
 
 /** Durata dupa care un task bifat se sterge automat: exact 8 ore. */
-export const AUTO_DELETE_MS = 8 * 60 * 60 * 1000;
+export const AUTO_DELETE_MS = 4 * 60 * 60 * 1000;
 
 /** Pragul (ultima ora) dupa care afisam indicatorul de expirare in ambru. */
 export const WARNING_MS = 60 * 60 * 1000;
@@ -27,7 +27,7 @@ export function msUntilExpiry(completedAt: number | null, now: number = Date.now
   return expiry - now;
 }
 
-/** True daca task-ul bifat a depasit cele 8h si trebuie sters. */
+/** True daca task-ul bifat a depasit cele 4h si trebuie sters. */
 export function isExpired(completedAt: number | null, now: number = Date.now()): boolean {
   const remaining = msUntilExpiry(completedAt, now);
   return remaining != null && remaining <= 0;
@@ -45,9 +45,9 @@ export function formatCountdown(ms: number): string {
   return `${s}s`;
 }
 
-/** Data + ora lizibila, format romanesc, ex: "14 iul. 2026, 09:42". */
-export function formatDateTime(ms: number): string {
-  return new Date(ms).toLocaleString("ro-RO", {
+/** Data + ora lizibila, in functie de locale (ex. "en-US" / "ro-RO"). */
+export function formatDateTime(ms: number, locale = "en-US"): string {
+  return new Date(ms).toLocaleString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -57,8 +57,8 @@ export function formatDateTime(ms: number): string {
 }
 
 /** Doar ora, ex: "09:42". */
-export function formatTime(ms: number): string {
-  return new Date(ms).toLocaleTimeString("ro-RO", {
+export function formatTime(ms: number, locale = "en-US"): string {
+  return new Date(ms).toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });

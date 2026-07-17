@@ -55,8 +55,16 @@ body,
 }
 
 body {
-  font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system,
-    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family: var(
+    --app-font,
+    "Segoe UI Variable Text",
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    sans-serif
+  );
   font-size: 16px;
   line-height: 1.4;
   color: var(--text);
@@ -326,7 +334,7 @@ body {
 }
 
 .task__text {
-  font-size: 17px;
+  font-size: var(--task-font-size, 17px);
   color: var(--text);
   word-break: break-word;
   cursor: text;
@@ -345,7 +353,7 @@ body {
 }
 
 .task__edit {
-  font-size: 17px;
+  font-size: var(--task-font-size, 17px);
   font-family: inherit;
   color: var(--text);
   background: var(--bg);
@@ -382,6 +390,66 @@ body {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+/* Marcajul "!" din stanga textului, pentru task prioritar. */
+.task__prio {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Cotorul din stanga devine rosu cand task-ul e prioritar (si activ). */
+.task--priority:not(.task--done) {
+  border-left-color: var(--danger);
+}
+
+/* Butonul de marcare prioritate (steag). */
+.task__prio-btn {
+  flex-shrink: 0;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.task:hover .task__prio-btn,
+.task__prio-btn:focus-visible {
+  opacity: 1;
+}
+
+.task__prio-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Cand e activ, steagul ramane mereu vizibil si colorat. */
+.task__prio-btn--on {
+  opacity: 1;
+  color: var(--danger);
+}
+
+.task__prio-btn--on:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 /* Apare la trecerea peste nota, sau cand butonul are focus (tastatura). */
@@ -525,9 +593,49 @@ body {
   color: var(--text-muted);
 }
 
+.settings__version {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
 /* ---------- Color customizer ---------- */
 .settings__row--block {
   display: block;
+}
+
+/* In randurile-bloc, titlul si descrierea stau pe linii separate. */
+.settings__row--block > .settings__title {
+  display: block;
+}
+
+.settings__row--block > .settings__desc {
+  display: block;
+  margin-top: 3px;
+  max-width: none;
+}
+
+/* ---------- Typography fields ---------- */
+.type-field {
+  margin-top: 12px;
+}
+
+.type-field__label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.segmented--wrap {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.type-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .colors__head {
@@ -680,6 +788,372 @@ body {
 .popup__btn--primary:hover {
   background: var(--accent);
   opacity: 0.9;
+}
+
+/* ---------- Gamification ---------- */
+.game-wrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.game:hover {
+  border-color: var(--accent);
+}
+
+.game__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.game__badge-name {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.game__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.game__level {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 34px;
+}
+
+.game__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.game__fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--xp-fill, var(--accent));
+  transition: width 0.35s ease;
+}
+
+.game__xp {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.game__toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  transform: translateY(-100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  z-index: 5;
+  animation: toast-in 0.25s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-100%) translateY(6px); }
+  to { opacity: 1; transform: translateY(-100%); }
+}
+
+.achievements {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.ach-summary {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ach-summary__level {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.ach-summary__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.ach-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.ach {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.ach__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.ach--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.ach--on .ach__icon {
+  color: var(--accent);
+}
+
+.ach--off {
+  opacity: 0.55;
+}
+
+.ach--off .ach__icon {
+  color: var(--text-muted);
+}
+
+.ach__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ach__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ach__desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------- Reminder ---------- */
+.popup--reminder {
+  text-align: left;
+}
+
+.reminder__task {
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.reminder__field {
+  display: block;
+}
+
+.reminder__input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.task__reminder {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent);
+}
+
+/* ---------- Calendar ---------- */
+.calendar {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.calendar__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.calendar__title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.calendar__title h2 {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.calendar__today {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar__close {
+  font-size: 20px;
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.calendar__weekdays {
+  margin-bottom: 4px;
+}
+
+.calendar__weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  padding: 2px 0;
+}
+
+.calendar__cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.calendar__cell:hover {
+  background: var(--surface-2);
+}
+
+.calendar__cell--empty {
+  cursor: default;
+}
+
+.calendar__cell--today {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.calendar__cell--selected {
+  background: var(--accent);
+  color: #fff;
+}
+
+.calendar__dot {
+  position: absolute;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.calendar__cell--selected .calendar__dot {
+  background: #fff;
+}
+
+.calendar__list {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendar__empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.calendar__item {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.calendar__time {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar__text {
+  color: var(--text);
+  word-break: break-word;
 }
 
 /* Switch (toggle) */

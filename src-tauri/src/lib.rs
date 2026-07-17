@@ -11,9 +11,67 @@ use tauri::{
 };
 use tauri_plugin_autostart::MacosLauncher;
 
+/// Aseaza fereastra pe marginea dreapta a ecranului, pe toata inaltimea UTILA
+/// (adica pana la taskbar, nu peste el). Pe Windows citim zona utila reala;
+/// daca nu reusim, cadem pe inaltimea totala a monitorului.
+fn dock_right(window: &tauri::WebviewWindow) {
+    let w = match window.outer_size() {
+        Ok(size) => size.width as i32,
+        Err(_) => return,
+    };
+
+    // ---- Windows: zona utila (fara taskbar) ----
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::Foundation::RECT;
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            SystemParametersInfoW, SPI_GETWORKAREA,
+        };
+
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+        let ok = unsafe {
+            SystemParametersInfoW(
+                SPI_GETWORKAREA,
+                0,
+                &mut rect as *mut RECT as *mut core::ffi::c_void,
+                0,
+            )
+        };
+        if ok != 0 {
+            let height = (rect.bottom - rect.top).max(1);
+            let x = rect.right - w;
+            let y = rect.top;
+            let _ = window.set_size(tauri::PhysicalSize::new(w as u32, height as u32));
+            let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
+            return;
+        }
+    }
+
+    // ---- Rezerva: inaltimea totala a monitorului ----
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten());
+    if let Some(monitor) = monitor {
+        let msize = monitor.size();
+        let mpos = monitor.position();
+        let x = mpos.x + msize.width as i32 - w;
+        let y = mpos.y;
+        let _ = window.set_size(tauri::PhysicalSize::new(w as u32, msize.height));
+        let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
+    }
+}
+
 /// Afiseaza si focalizeaza fereastra principala (din tray sau alt instance).
 fn show_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
+        dock_right(&window);
         let _ = window.show();
         let _ = window.unminimize();
         let _ = window.set_focus();
@@ -34,11 +92,14 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Necesar pentru relansarea aplicatiei dupa instalarea update-ului.
         .plugin(tauri_plugin_process::init())
-        // Pornire automata cu Windows. Argumentul "--minimized" este adaugat
-        // la comanda de lansare, ca sa stim ca pornirea a venit de la sistem.
+        // Notificari native pentru memento-uri (reminders).
+        .plugin(tauri_plugin_notification::init())
+        // Pornire automata cu Windows. Fara argumentul "--minimized", ca
+        // aplicatia sa se deschida VIZIBIL la logare (lipita dreapta), nu
+        // ascunsa in tray.
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
-            Some(vec!["--minimized"]),
+            None,
         ))
         .setup(|app| {
             // ---- Meniul din tray ----
@@ -84,16 +145,11 @@ pub fn run() {
                     }
                 });
 
-                // ---- Pornire minimizata la boot ----
-                // Daca lansarea a venit de la Windows (autostart), fereastra
-                // ramane ascunsa in tray. Altfel, o afisam normal.
-                let started_by_system =
-                    std::env::args().any(|arg| arg == "--minimized");
-                if started_by_system {
-                    let _ = window.hide();
-                } else {
-                    let _ = window.show();
-                }
+                // ---- Afisare la pornire ----
+                // Aplicatia se deschide vizibil, lipita pe dreapta monitorului,
+                // atat la lansare manuala cat si la pornirea automata cu Windows.
+                dock_right(&window);
+                let _ = window.show();
             }
 
             Ok(())

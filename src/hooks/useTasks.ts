@@ -1,6 +1,6 @@
 // Hook central care gestioneaza toata starea task-urilor:
 // incarcare, adaugare, editare, bifare, stergere, reordonare si
-// "maturarea" automata a task-urilor bifate mai vechi de 8h.
+// "maturarea" automata a task-urilor bifate mai vechi de 4h.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Task } from "../types";
@@ -11,6 +11,8 @@ import {
   getAllTasks,
   persistOrder,
   setTaskCompleted,
+  setTaskPriority,
+  setTaskReminder,
   updateTaskText,
 } from "../db/database";
 import { isExpired } from "../lib/time";
@@ -18,19 +20,30 @@ import { isExpired } from "../lib/time";
 /** Cat de des verificam expirarea si actualizam countdown-urile (ms). */
 const TICK_MS = 10_000;
 
-export function useTasks() {
+export function useTasks(onBonus?: (count: number) => void) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   /** "Ceasul" partajat; schimbarea lui reactualizeaza countdown-urile din UI. */
   const [now, setNow] = useState<number>(Date.now());
 
+  // Referinta mereu-actuala la lista de task-uri. O folosim ca sa citim
+  // valoarea curenta SINCRON in handlere, fara sa depindem de momentul in care
+  // ruleaza functia de actualizare a starii (care ruleaza mai tarziu, la render).
+  const tasksRef = useRef<Task[]>([]);
+  tasksRef.current = tasks;
+
+  // Callback pentru bonusul de angajament, tinut intr-un ref ca sa fie mereu actual.
+  const onBonusRef = useRef<((count: number) => void) | undefined>(onBonus);
+  onBonusRef.current = onBonus;
+
   // Incarcarea initiala: mai intai curatam ce a expirat cat a fost aplicatia
-  // inchisa, apoi aducem lista din baza de date.
+  // inchisa (acordand bonusul pentru cele eligibile), apoi aducem lista.
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        await deleteExpiredTasks();
+        const bonus = await deleteExpiredTasks();
+        if (bonus > 0) onBonusRef.current?.(bonus);
         const all = await getAllTasks();
         if (alive) setTasks(all);
       } catch (err) {
@@ -45,21 +58,20 @@ export function useTasks() {
   }, []);
 
   // Bataia de ceas: la fiecare TICK_MS actualizam "now" (pentru countdown)
-  // si stergem task-urile care tocmai au depasit 8h. Ruleaza si cand
+  // si stergem task-urile care tocmai au depasit 4h. Ruleaza si cand
   // fereastra e ascunsa in tray, pentru ca webview-ul ramane activ.
   useEffect(() => {
-    const tick = () => {
+    const tick = async () => {
       const t = Date.now();
       setNow(t);
-      setTasks((prev) => {
-        const survivors = prev.filter((task) => !isExpired(task.completedAt, t));
-        if (survivors.length !== prev.length) {
-          // Curatam si in baza de date (fire-and-forget, acelasi prag de timp).
-          void deleteExpiredTasks(t);
-          return survivors;
-        }
-        return prev;
-      });
+      const survivors = tasksRef.current.filter(
+        (task) => !isExpired(task.completedAt, t)
+      );
+      if (survivors.length !== tasksRef.current.length) {
+        const bonus = await deleteExpiredTasks(t);
+        if (bonus > 0) onBonusRef.current?.(bonus);
+        setTasks(survivors);
+      }
     };
     const id = window.setInterval(tick, TICK_MS);
     return () => window.clearInterval(id);
@@ -79,19 +91,32 @@ export function useTasks() {
   }, []);
 
   const toggle = useCallback(async (id: number) => {
-    let nextCompleted = false;
+    // Calculam valoarea urmatoare din starea CURENTA (sincron), apoi o folosim
+    // atat pentru UI cat si pentru baza de date. Asa DB-ul primeste valoarea corecta.
+    const current = tasksRef.current.find((t) => t.id === id);
+    if (!current) return;
+    const nextCompleted = !current.completed;
+    const completedAt = nextCompleted ? Date.now() : null;
     setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        nextCompleted = !t.completed;
-        return {
-          ...t,
-          completed: nextCompleted,
-          completedAt: nextCompleted ? Date.now() : null,
-        };
-      })
+      prev.map((t) =>
+        t.id === id ? { ...t, completed: nextCompleted, completedAt } : t
+      )
     );
     await setTaskCompleted(id, nextCompleted);
+  }, []);
+
+  const togglePriority = useCallback(async (id: number) => {
+    const current = tasksRef.current.find((t) => t.id === id);
+    if (!current) return;
+    const next = !current.priority;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, priority: next } : t)));
+    await setTaskPriority(id, next);
+  }, []);
+
+  /** Seteaza sau sterge (null) reminderul unui task. */
+  const setReminder = useCallback(async (id: number, reminderAt: number | null) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, reminderAt } : t)));
+    await setTaskReminder(id, reminderAt);
   }, []);
 
   const remove = useCallback(async (id: number) => {
@@ -100,28 +125,17 @@ export function useTasks() {
   }, []);
 
   /** Reordoneaza task-urile active dupa drag & drop si salveaza pozitiile. */
-  const reorderActive = useCallback(
-    async (orderedActiveIds: number[]) => {
-      // Reconstruim lista completa: intai activele in noua ordine, apoi cele bifate.
-      setTasks((prev) => {
-        const byId = new Map(prev.map((t) => [t.id, t]));
-        const reordered = orderedActiveIds
-          .map((id) => byId.get(id))
-          .filter((t): t is Task => Boolean(t));
-        const completed = prev.filter((t) => t.completed);
-        const merged = [...reordered, ...completed].map((t, i) => ({ ...t, position: i }));
-        // Persistam ordinea completa in fundal.
-        void persistOrder(merged.map((t) => t.id));
-        return merged;
-      });
-    },
-    []
-  );
-
-  // Pastram o referinta la ultimele task-uri pentru consumatori care au
-  // nevoie de valoarea curenta fara sa declanseze re-render.
-  const tasksRef = useRef(tasks);
-  tasksRef.current = tasks;
+  const reorderActive = useCallback(async (orderedActiveIds: number[]) => {
+    const prev = tasksRef.current;
+    const byId = new Map(prev.map((t) => [t.id, t]));
+    const reordered = orderedActiveIds
+      .map((id) => byId.get(id))
+      .filter((t): t is Task => Boolean(t));
+    const completed = prev.filter((t) => t.completed);
+    const merged = [...reordered, ...completed].map((t, i) => ({ ...t, position: i }));
+    setTasks(merged);
+    await persistOrder(merged.map((t) => t.id));
+  }, []);
 
   return {
     tasks,
@@ -131,6 +145,8 @@ export function useTasks() {
     editText,
     toggle,
     remove,
+    togglePriority,
+    setReminder,
     reorderActive,
     tasksRef,
   };
