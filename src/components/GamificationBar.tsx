@@ -1,23 +1,39 @@
 // Bara compacta de gamificare, deasupra campului de adaugare.
-// Nivel + bara de XP; click pe ea deschide realizarile. Toast scurt la deblocare.
+// Badge curent + nivel + bara de XP; click deschide realizarile. Toast la deblocare.
 
 import { useI18n } from "../i18n/i18n";
+import type { Achievement } from "../gamification/achievements";
 
 interface Props {
   level: number;
   into: number;
   need: number;
   progress: number;
+  badge: Achievement | null;
   toast: string | null;
   onOpen: () => void;
 }
 
-export function GamificationBar({ level, into, need, progress, toast, onOpen }: Props) {
+function Medal({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ color }}>
+      <path
+        d="M12 2l2.6 5.4 6 .9-4.3 4.2 1 6L12 15.8 6.7 18.5l1-6L3.4 8.3l6-.9z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+export function GamificationBar({ level, into, need, progress, badge, toast, onOpen }: Props) {
   const { t } = useI18n();
 
   return (
     <div className="game-wrap">
       <button className="game" onClick={onOpen} title={t("gam.title")}>
+        <span className="game__badge">
+          <Medal color={badge ? badge.color : "var(--text-muted)"} />
+        </span>
         <span className="game__level">{t("gam.level", { n: level })}</span>
         <span className="game__bar">
           <span

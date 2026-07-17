@@ -1,7 +1,8 @@
-# Publica automat un update la fiecare push pe main.
-# Creste singur versiunea (1.0.<numarul rularii>), compileaza, SEMNEAZA
-# si publica un GitHub Release cu installer-ul + latest.json.
-# Tu doar dai push din VS Code; aplicatia va gasi singura update-ul.
+# Publica un release cu versiunea luata din MESAJUL DE COMMIT.
+# Pune in mesaj un marcaj de forma vX.Y.Z (ex: "am adaugat calendar v6.2.0").
+# - daca gaseste vX.Y.Z si tag-ul nu exista deja -> compileaza, semneaza, publica
+# - daca nu gaseste vX.Y.Z in mesaj -> nu publica nimic (push normal)
+# - daca versiunea a mai fost publicata -> nu republica
 
 name: Release
 
@@ -25,25 +26,47 @@ jobs:
         with:
           node-version: 20
 
+      - name: Ia versiunea din mesajul de commit
+        id: ver
+        shell: bash
+        run: |
+          MSG=$(git log -1 --pretty=%B)
+          echo "Mesaj commit: $MSG"
+          VERSION=$(echo "$MSG" | grep -oiE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | sed 's/^[vV]//')
+
+          if [ -z "$VERSION" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Niciun vX.Y.Z in mesaj — nu publicam."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Versiunea v$VERSION exista deja — nu republicam."
+            exit 0
+          fi
+
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # Scriem versiunea in config, ca sa fie folosita la build si in aplicatie.
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const c=JSON.parse(fs.readFileSync(p));c.version='$VERSION';fs.writeFileSync(p,JSON.stringify(c,null,2));console.log('Versiune setata la',c.version)"
+
       - name: Setup Rust
+        if: steps.ver.outputs.publish == 'true'
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust (accelereaza rularile urmatoare)
+      - name: Cache Rust
+        if: steps.ver.outputs.publish == 'true'
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "src-tauri -> target"
 
-      - name: Seteaza versiunea automat (1.0.<run_number>)
-        shell: bash
-        env:
-          VERSION: 1.0.${{ github.run_number }}
-        run: |
-          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const c=JSON.parse(fs.readFileSync(p));c.version=process.env.VERSION;fs.writeFileSync(p,JSON.stringify(c,null,2));console.log('Versiune setata la',c.version)"
-
       - name: Instaleaza dependentele frontend
+        if: steps.ver.outputs.publish == 'true'
         run: npm install
 
       - name: Build + semnare + publicare Release
+        if: steps.ver.outputs.publish == 'true'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -23,6 +23,7 @@ export const COLOR_TOKENS: ColorToken[] = [
   { key: "text", labelKey: "color.text", defaults: { light: "#1b1b22", dark: "#ececf2" } },
   { key: "text-muted", labelKey: "color.text-muted", defaults: { light: "#8a8a99", dark: "#82828f" } },
   { key: "accent", labelKey: "color.accent", defaults: { light: "#4f6df5", dark: "#7c90ff" } },
+  { key: "xp-fill", labelKey: "color.xp-fill", defaults: { light: "#4f6df5", dark: "#7c90ff" } },
   { key: "done-text", labelKey: "color.done-text", defaults: { light: "#a6a6b2", dark: "#6a6a76" } },
   { key: "warn", labelKey: "color.warn", defaults: { light: "#d98a25", dark: "#e9a94a" } },
   { key: "danger", labelKey: "color.danger", defaults: { light: "#e5484d", dark: "#f16a6e" } },

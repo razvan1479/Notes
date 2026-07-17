@@ -1,14 +1,18 @@
-// Gestioneaza XP-ul, nivelul, task-urile terminate si realizarile deblocate.
-// Totul e salvat local si persista intre sesiuni. XP se acorda o singura data
-// per task (prima data cand e terminat), ca sa nu se poata "farmui".
+// XP-ul e calculat LIVE din task-urile terminate care inca exista:
+//   xp = suma valorilor task-urilor bifate (10, +5 daca sunt prioritare).
+// Astfel: complete -> creste, debifare -> scade, stergere (manuala sau automata)
+// -> scade, totul automat, fara evenimente separate.
+//
+// Realizarile si numarul total de task-uri terminate (pentru badge-uri) sunt
+// pastrate separat si NU scad — sunt repere permanente, salvate local.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Task } from "../types";
 import {
   ACHIEVEMENTS,
+  currentBadge,
   isUnlocked,
   levelInfo,
-  type LevelInfo,
 } from "../gamification/achievements";
 
 const STORAGE_KEY = "quicktasks.game";
@@ -16,11 +20,14 @@ const XP_BASE = 10;
 const XP_PRIORITY_BONUS = 5;
 const MAX_REWARDED = 1000;
 
+function taskValue(t: Task): number {
+  return XP_BASE + (t.priority ? XP_PRIORITY_BONUS : 0);
+}
+
 interface GameState {
-  xp: number;
-  completed: number;
-  rewarded: number[]; // id-uri deja recompensate
-  unlocked: string[]; // id-uri realizari deblocate
+  lifetimeCompleted: number; // total terminate vreodata (nu scade) — pentru badge-uri
+  rewarded: number[]; // id-uri numarate deja in lifetimeCompleted
+  unlocked: string[]; // realizari deblocate (permanente)
 }
 
 function loadState(): GameState {
@@ -29,8 +36,7 @@ function loadState(): GameState {
     if (raw) {
       const p = JSON.parse(raw);
       return {
-        xp: Number(p.xp) || 0,
-        completed: Number(p.completed) || 0,
+        lifetimeCompleted: Number(p.lifetimeCompleted ?? p.completed) || 0,
         rewarded: Array.isArray(p.rewarded) ? p.rewarded : [],
         unlocked: Array.isArray(p.unlocked) ? p.unlocked : [],
       };
@@ -38,15 +44,19 @@ function loadState(): GameState {
   } catch {
     /* ignoram */
   }
-  return { xp: 0, completed: 0, rewarded: [], unlocked: [] };
+  return { lifetimeCompleted: 0, rewarded: [], unlocked: [] };
 }
 
-export function useGamification() {
+export function useGamification(tasks: Task[]) {
   const [state, setState] = useState<GameState>(loadState);
-  const stateRef = useRef(state);
-  stateRef.current = state;
-
   const [toast, setToast] = useState<string | null>(null);
+
+  // XP live din task-urile terminate existente.
+  const xp = useMemo(
+    () => tasks.reduce((sum, t) => sum + (t.completed ? taskValue(t) : 0), 0),
+    [tasks]
+  );
+  const info = levelInfo(xp);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -59,38 +69,44 @@ export function useGamification() {
     return () => window.clearTimeout(id);
   }, [toast]);
 
-  const award = useCallback((task: Task) => {
-    const s = stateRef.current;
-    if (s.rewarded.includes(task.id)) return; // deja recompensat
-
-    const gain = XP_BASE + (task.priority ? XP_PRIORITY_BONUS : 0);
-    const xp = s.xp + gain;
-    const completed = s.completed + 1;
-    const level = levelInfo(xp).level;
-
-    let rewarded = [...s.rewarded, task.id];
-    if (rewarded.length > MAX_REWARDED) rewarded = rewarded.slice(-MAX_REWARDED);
-
+  // Deblocarea realizarilor (permanenta), pe baza totalului terminat si a nivelului.
+  useEffect(() => {
     const newly = ACHIEVEMENTS.filter(
-      (a) => !s.unlocked.includes(a.id) && isUnlocked(a, { completed, level })
-    ).map((a) => a.id);
-    const unlocked = newly.length ? [...s.unlocked, ...newly] : s.unlocked;
+      (a) =>
+        !state.unlocked.includes(a.id) &&
+        isUnlocked(a, { completed: state.lifetimeCompleted, level: info.level })
+    );
+    if (newly.length) {
+      setState((s) => ({
+        ...s,
+        unlocked: Array.from(new Set([...s.unlocked, ...newly.map((a) => a.id)])),
+      }));
+      setToast(newly[0].id);
+    }
+  }, [state.lifetimeCompleted, state.unlocked, info.level]);
 
-    setState({ xp, completed, rewarded, unlocked });
-    if (newly.length) setToast(newly[0]);
+  // Se apeleaza cand un task trece in "terminat"; creste doar contorul permanent
+  // (o singura data per task). XP-ul se ocupa singur, fiind derivat din task-uri.
+  const award = useCallback((task: Task) => {
+    setState((s) => {
+      if (s.rewarded.includes(task.id)) return s;
+      let rewarded = [...s.rewarded, task.id];
+      if (rewarded.length > MAX_REWARDED) rewarded = rewarded.slice(-MAX_REWARDED);
+      return { ...s, lifetimeCompleted: s.lifetimeCompleted + 1, rewarded };
+    });
   }, []);
 
-  const info: LevelInfo = levelInfo(state.xp);
   const achievements = ACHIEVEMENTS.map((a) => ({
     ...a,
     unlocked: state.unlocked.includes(a.id),
   }));
 
   return {
-    xp: state.xp,
-    completed: state.completed,
+    xp,
+    completed: state.lifetimeCompleted,
     ...info,
     achievements,
+    badge: currentBadge(state.unlocked),
     award,
     toast,
     dismissToast: () => setToast(null),

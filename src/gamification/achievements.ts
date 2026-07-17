@@ -4,17 +4,28 @@ export interface Achievement {
   id: string;
   type: "completed" | "level";
   threshold: number;
+  color: string;
 }
 
 // Realizari (badge-uri). Numele/descrierile sunt traduse dupa id (ach.<id>.name).
+// Ordinea = de la usor la greu; ultimul deblocat e "badge-ul curent".
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: "first", type: "completed", threshold: 1 },
-  { id: "ten", type: "completed", threshold: 10 },
-  { id: "fifty", type: "completed", threshold: 50 },
-  { id: "hundred", type: "completed", threshold: 100 },
-  { id: "level5", type: "level", threshold: 5 },
-  { id: "level10", type: "level", threshold: 10 },
+  { id: "first", type: "completed", threshold: 1, color: "#cd7f32" },
+  { id: "ten", type: "completed", threshold: 10, color: "#9aa0a6" },
+  { id: "fifty", type: "completed", threshold: 50, color: "#f4b400" },
+  { id: "hundred", type: "completed", threshold: 100, color: "#34a0c8" },
+  { id: "level5", type: "level", threshold: 5, color: "#7c5cff" },
+  { id: "level10", type: "level", threshold: 10, color: "#e5484d" },
 ];
+
+/** Badge-ul curent = ultima realizare deblocata (cea mai "inalta"). */
+export function currentBadge(unlockedIds: string[]): Achievement | null {
+  let best: Achievement | null = null;
+  for (const a of ACHIEVEMENTS) {
+    if (unlockedIds.includes(a.id)) best = a;
+  }
+  return best;
+}
 
 export interface LevelInfo {
   level: number;

@@ -1,7 +1,7 @@
 {
   "name": "quicktasks",
   "private": true,
-  "version": "1.0.0",
+  "version": "6.1.0",
   "type": "module",
   "description": "Aplicatie desktop minimalista To-Do / Sticky Notes, locala si rapida (Tauri + React + TS)",
   "scripts": {

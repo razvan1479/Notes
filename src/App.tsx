@@ -34,7 +34,7 @@ export default function App() {
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
-  const game = useGamification();
+  const game = useGamification(tasks);
   const { t } = useI18n();
   const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
   useReminders(tasksRef, clearReminder, t("reminder.title"));
@@ -144,6 +144,7 @@ export default function App() {
         into={game.into}
         need={game.need}
         progress={game.progress}
+        badge={game.badge}
         toast={game.toast}
         onOpen={() => setAchievementsOpen(true)}
       />

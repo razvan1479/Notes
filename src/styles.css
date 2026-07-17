@@ -793,8 +793,7 @@ body {
 /* ---------- Gamification ---------- */
 .game-wrap {
   position: relative;
-  padding: 0 16px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .game {
@@ -802,9 +801,9 @@ body {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 6px 10px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--surface);
   cursor: pointer;
   font-family: inherit;
@@ -813,6 +812,12 @@ body {
 
 .game:hover {
   border-color: var(--accent);
+}
+
+.game__badge {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
 }
 
 .game__level {
@@ -835,7 +840,7 @@ body {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: var(--accent);
+  background: var(--xp-fill, var(--accent));
   transition: width 0.35s ease;
 }
 
@@ -849,8 +854,8 @@ body {
 
 .game__toast {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 0;
+  right: 0;
   top: -6px;
   transform: translateY(-100%);
   display: flex;
