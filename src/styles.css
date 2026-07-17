@@ -790,6 +790,175 @@ body {
   opacity: 0.9;
 }
 
+/* ---------- Gamification ---------- */
+.game-wrap {
+  position: relative;
+  padding: 0 16px;
+  margin-bottom: 4px;
+}
+
+.game {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.game:hover {
+  border-color: var(--accent);
+}
+
+.game__level {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 34px;
+}
+
+.game__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.game__fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.game__xp {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.game__toast {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: -6px;
+  transform: translateY(-100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  z-index: 5;
+  animation: toast-in 0.25s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-100%) translateY(6px); }
+  to { opacity: 1; transform: translateY(-100%); }
+}
+
+.achievements {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.ach-summary {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ach-summary__level {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.ach-summary__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.ach-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.ach {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.ach__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.ach--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.ach--on .ach__icon {
+  color: var(--accent);
+}
+
+.ach--off {
+  opacity: 0.55;
+}
+
+.ach--off .ach__icon {
+  color: var(--text-muted);
+}
+
+.ach__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ach__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ach__desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* ---------- Reminder ---------- */
 .popup--reminder {
   text-align: left;

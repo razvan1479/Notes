@@ -10,12 +10,15 @@ import { Settings } from "./components/Settings";
 import { UpdatePopup } from "./components/UpdatePopup";
 import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
+import { GamificationBar } from "./components/GamificationBar";
+import { AchievementsModal } from "./components/AchievementsModal";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
 import { useReminders } from "./hooks/useReminders";
+import { useGamification } from "./hooks/useGamification";
 import { useI18n } from "./i18n/i18n";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
@@ -31,6 +34,7 @@ export default function App() {
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
+  const game = useGamification();
   const { t } = useI18n();
   const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
   useReminders(tasksRef, clearReminder, t("reminder.title"));
@@ -40,6 +44,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -80,6 +85,16 @@ export default function App() {
     addInputRef.current?.focus();
   }, []);
 
+  // Bifarea unui task acorda XP (o singura data per task, la trecerea in "terminat").
+  const handleToggle = useCallback(
+    (id: number) => {
+      const task = tasksRef.current.find((t) => t.id === id);
+      toggle(id);
+      if (task && !task.completed) game.award(task);
+    },
+    [toggle, game, tasksRef]
+  );
+
   // Scurtaturi globale (handlere stabile, citesc selectia din ref).
   const hotkeyHandlers = useMemo(
     () => ({
@@ -94,10 +109,10 @@ export default function App() {
       },
       onToggleSelected: () => {
         const id = selectedRef.current;
-        if (id != null) toggle(id);
+        if (id != null) handleToggle(id);
       },
     }),
-    [focusAdd, openSearch, remove, toggle]
+    [focusAdd, openSearch, remove, handleToggle]
   );
   useHotkeys(hotkeyHandlers);
 
@@ -124,6 +139,15 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
+      <GamificationBar
+        level={game.level}
+        into={game.into}
+        need={game.need}
+        progress={game.progress}
+        toast={game.toast}
+        onOpen={() => setAchievementsOpen(true)}
+      />
+
       <TaskInput ref={addInputRef} onAdd={add} />
 
       {searchOpen && (
@@ -141,7 +165,7 @@ export default function App() {
           selectedId={selectedId}
           hasQuery={query.trim().length > 0}
           onSelect={setSelectedId}
-          onToggle={toggle}
+          onToggle={handleToggle}
           onEditText={editText}
           onDelete={remove}
           onTogglePriority={togglePriority}
@@ -170,6 +194,16 @@ export default function App() {
 
       {calendarOpen && (
         <CalendarModal tasks={tasks} onClose={() => setCalendarOpen(false)} />
+      )}
+
+      {achievementsOpen && (
+        <AchievementsModal
+          level={game.level}
+          xp={game.xp}
+          completed={game.completed}
+          achievements={game.achievements}
+          onClose={() => setAchievementsOpen(false)}
+        />
       )}
 
       {reminderTaskId != null && (() => {
