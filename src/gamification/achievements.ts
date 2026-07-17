@@ -9,7 +9,6 @@ export interface Achievement {
 
 // Realizari (badge-uri). Numele/descrierile sunt traduse dupa id (ach.<id>.name).
 // Ordinea = de la usor la greu; ultimul deblocat e "badge-ul curent".
-<<<<<<< HEAD
 // Realizari (badge-uri) — o singura scara, dupa numarul TOTAL de task-uri
 // terminate (valoare care doar creste). Astfel se deblocheaza strict in ordine,
 // niciodata nu "sar" peste una si niciodata nu se pierd.
@@ -26,23 +25,6 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "c1000", type: "completed", threshold: 1000, color: "#ff5c8a" },
   { id: "c1500", type: "completed", threshold: 1500, color: "#ff8a3d" },
   { id: "c2500", type: "completed", threshold: 2500, color: "#00c2b8" },
-=======
-export const ACHIEVEMENTS: Achievement[] = [
-  { id: "first", type: "completed", threshold: 1, color: "#cd7f32" },
-  { id: "level3", type: "level", threshold: 3, color: "#8a8f98" },
-  { id: "ten", type: "completed", threshold: 10, color: "#9aa0a6" },
-  { id: "twentyfive", type: "completed", threshold: 25, color: "#e0873b" },
-  { id: "level5", type: "level", threshold: 5, color: "#7c5cff" },
-  { id: "fifty", type: "completed", threshold: 50, color: "#f4b400" },
-  { id: "hundred", type: "completed", threshold: 100, color: "#34a0c8" },
-  { id: "level10", type: "level", threshold: 10, color: "#e5484d" },
-  { id: "twohundred", type: "completed", threshold: 200, color: "#2bb673" },
-  { id: "level15", type: "level", threshold: 15, color: "#00b3a4" },
-  { id: "level20", type: "level", threshold: 20, color: "#ffb020" },
-  { id: "fivehundred", type: "completed", threshold: 500, color: "#e0457b" },
-  { id: "level30", type: "level", threshold: 30, color: "#b388ff" },
-  { id: "level50", type: "level", threshold: 50, color: "#ff5c8a" },
->>>>>>> 82bc27478e29a1f2863a7c51595a05c81201289a
 ];
 
 /** Badge-ul curent = ultima realizare deblocata (cea mai "inalta"). */
