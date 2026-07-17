@@ -13,8 +13,8 @@ export interface Achievement {
 // terminate (valoare care doar creste). Astfel se deblocheaza strict in ordine,
 // niciodata nu "sar" peste una si niciodata nu se pierd.
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: "c1", type: "completed", threshold: 1, color: "#cd7f32" },
-  { id: "c10", type: "completed", threshold: 10, color: "#c0c0c8" },
+  { id: "c1", type: "completed", threshold: 1, color: "#c0c0c8" },
+  { id: "c10", type: "completed", threshold: 10, color: "#cd7f32" },
   { id: "c25", type: "completed", threshold: 25, color: "#f4b400" },
   { id: "c50", type: "completed", threshold: 50, color: "#2bb673" },
   { id: "c100", type: "completed", threshold: 100, color: "#34a0c8" },
