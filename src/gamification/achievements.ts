@@ -11,11 +11,19 @@ export interface Achievement {
 // Ordinea = de la usor la greu; ultimul deblocat e "badge-ul curent".
 export const ACHIEVEMENTS: Achievement[] = [
   { id: "first", type: "completed", threshold: 1, color: "#cd7f32" },
+  { id: "level3", type: "level", threshold: 3, color: "#8a8f98" },
   { id: "ten", type: "completed", threshold: 10, color: "#9aa0a6" },
+  { id: "twentyfive", type: "completed", threshold: 25, color: "#e0873b" },
+  { id: "level5", type: "level", threshold: 5, color: "#7c5cff" },
   { id: "fifty", type: "completed", threshold: 50, color: "#f4b400" },
   { id: "hundred", type: "completed", threshold: 100, color: "#34a0c8" },
-  { id: "level5", type: "level", threshold: 5, color: "#7c5cff" },
   { id: "level10", type: "level", threshold: 10, color: "#e5484d" },
+  { id: "twohundred", type: "completed", threshold: 200, color: "#2bb673" },
+  { id: "level15", type: "level", threshold: 15, color: "#00b3a4" },
+  { id: "level20", type: "level", threshold: 20, color: "#ffb020" },
+  { id: "fivehundred", type: "completed", threshold: 500, color: "#e0457b" },
+  { id: "level30", type: "level", threshold: 30, color: "#b388ff" },
+  { id: "level50", type: "level", threshold: 50, color: "#ff5c8a" },
 ];
 
 /** Badge-ul curent = ultima realizare deblocata (cea mai "inalta"). */

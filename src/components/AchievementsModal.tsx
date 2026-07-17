@@ -34,7 +34,10 @@ export function AchievementsModal({ level, xp, completed, achievements, onClose 
               key={a.id}
               className={`ach ${a.unlocked ? "ach--on" : "ach--off"}`}
             >
-              <span className="ach__icon">
+              <span
+                className="ach__icon"
+                style={a.unlocked ? { color: a.color } : undefined}
+              >
                 <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
                   <path d="M12 2l2.6 5.4 6 .9-4.3 4.2 1 6L12 15.8 6.7 18.5l1-6L3.4 8.3l6-.9z" fill="currentColor" />
                 </svg>
