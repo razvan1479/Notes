@@ -25,7 +25,8 @@ async function getDb(): Promise<Database> {
           completed_at INTEGER,
           position     INTEGER NOT NULL DEFAULT 0,
           priority     INTEGER NOT NULL DEFAULT 0,
-          reminder_at  INTEGER
+          reminder_at  INTEGER,
+          unchecked_once INTEGER NOT NULL DEFAULT 0
         );
       `);
       // Migrari pentru bazele create inainte de coloanele noi.
@@ -39,6 +40,13 @@ async function getDb(): Promise<Database> {
       }
       try {
         await db.execute(`ALTER TABLE tasks ADD COLUMN reminder_at INTEGER;`);
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(
+          `ALTER TABLE tasks ADD COLUMN unchecked_once INTEGER NOT NULL DEFAULT 0;`
+        );
       } catch {
         /* coloana exista deja */
       }
@@ -119,10 +127,19 @@ export async function updateTaskText(id: number, text: string): Promise<void> {
 export async function setTaskCompleted(id: number, completed: boolean): Promise<void> {
   const db = await getDb();
   const completedAt = completed ? Date.now() : null;
-  await db.execute(
-    `UPDATE tasks SET completed = $1, completed_at = $2 WHERE id = $3;`,
-    [completed ? 1 : 0, completedAt, id]
-  );
+  if (completed) {
+    await db.execute(
+      `UPDATE tasks SET completed = 1, completed_at = $1 WHERE id = $2;`,
+      [completedAt, id]
+    );
+  } else {
+    // La debifare marcam permanent task-ul ca "debifat o data" — pierde dreptul
+    // la bonusul de angajament, chiar daca il rebifezi ulterior.
+    await db.execute(
+      `UPDATE tasks SET completed = 0, completed_at = NULL, unchecked_once = 1 WHERE id = $1;`,
+      [id]
+    );
+  }
 }
 
 /** Seteaza (sau sterge, cu null) momentul de reminder pentru un task. */
@@ -152,14 +169,26 @@ export async function deleteTask(id: number): Promise<void> {
  * indiferent cat timp a fost aplicatia inchisa.
  * @returns numarul de task-uri sterse.
  */
+/**
+ * Sterge task-urile bifate care au depasit cele 4h si intoarce cate dintre ele
+ * erau eligibile pentru bonusul de angajament (bifate si niciodata debifate).
+ */
 export async function deleteExpiredTasks(now: number = Date.now()): Promise<number> {
   const db = await getDb();
   const cutoff = now - AUTO_DELETE_MS;
-  const res = await db.execute(
+  // Numaram intai cate expira eligibile pentru bonus (unchecked_once = 0).
+  const rows = await db.select<{ n: number }[]>(
+    `SELECT COUNT(*) AS n FROM tasks
+     WHERE completed = 1 AND completed_at IS NOT NULL AND completed_at <= $1
+       AND unchecked_once = 0;`,
+    [cutoff]
+  );
+  const bonusCount = rows.length ? Number(rows[0].n) : 0;
+  await db.execute(
     `DELETE FROM tasks WHERE completed = 1 AND completed_at IS NOT NULL AND completed_at <= $1;`,
     [cutoff]
   );
-  return res.rowsAffected;
+  return bonusCount;
 }
 
 /** Salveaza o noua ordine (drag & drop). Primeste id-urile in ordinea dorita. */

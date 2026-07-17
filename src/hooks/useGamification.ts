@@ -26,6 +26,7 @@ function taskValue(t: Task): number {
 
 interface GameState {
   lifetimeCompleted: number; // total terminate vreodata (nu scade) — pentru badge-uri
+  bonusXp: number; // XP bonus permanent (angajament: lasat bifat pana la auto-stergere)
   rewarded: number[]; // id-uri numarate deja in lifetimeCompleted
   unlocked: string[]; // realizari deblocate (permanente)
 }
@@ -37,6 +38,7 @@ function loadState(): GameState {
       const p = JSON.parse(raw);
       return {
         lifetimeCompleted: Number(p.lifetimeCompleted ?? p.completed) || 0,
+        bonusXp: Number(p.bonusXp) || 0,
         rewarded: Array.isArray(p.rewarded) ? p.rewarded : [],
         unlocked: Array.isArray(p.unlocked) ? p.unlocked : [],
       };
@@ -44,18 +46,20 @@ function loadState(): GameState {
   } catch {
     /* ignoram */
   }
-  return { lifetimeCompleted: 0, rewarded: [], unlocked: [] };
+  return { lifetimeCompleted: 0, bonusXp: 0, rewarded: [], unlocked: [] };
 }
 
 export function useGamification(tasks: Task[]) {
   const [state, setState] = useState<GameState>(loadState);
   const [toast, setToast] = useState<string | null>(null);
 
-  // XP live din task-urile terminate existente.
-  const xp = useMemo(
+  // XP live din task-urile terminate existente, plus bonusul permanent castigat
+  // pentru task-urile lasate bifate pana la auto-stergere.
+  const liveXp = useMemo(
     () => tasks.reduce((sum, t) => sum + (t.completed ? taskValue(t) : 0), 0),
     [tasks]
   );
+  const xp = liveXp + state.bonusXp;
   const info = levelInfo(xp);
 
   useEffect(() => {
@@ -96,6 +100,14 @@ export function useGamification(tasks: Task[]) {
     });
   }, []);
 
+  // Bonus permanent de angajament: +10 XP pentru fiecare task lasat bifat pana
+  // la auto-stergere (fara sa fie debifat intre timp).
+  const BONUS_PER_TASK = 10;
+  const addBonus = useCallback((count: number) => {
+    if (count <= 0) return;
+    setState((s) => ({ ...s, bonusXp: s.bonusXp + count * BONUS_PER_TASK }));
+  }, []);
+
   const achievements = ACHIEVEMENTS.map((a) => ({
     ...a,
     unlocked: state.unlocked.includes(a.id),
@@ -108,6 +120,7 @@ export function useGamification(tasks: Task[]) {
     achievements,
     badge: currentBadge(state.unlocked),
     award,
+    addBonus,
     toast,
     dismissToast: () => setToast(null),
   };

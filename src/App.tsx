@@ -30,11 +30,14 @@ function norm(s: string): string {
 }
 
 export default function App() {
-  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, reorderActive, tasksRef } = useTasks();
+  const bonusRef = useRef<(count: number) => void>(() => {});
+  const onBonus = useCallback((count: number) => bonusRef.current(count), []);
+  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
   const game = useGamification(tasks);
+  bonusRef.current = game.addBonus;
   const { t } = useI18n();
   const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
   useReminders(tasksRef, clearReminder, t("reminder.title"));

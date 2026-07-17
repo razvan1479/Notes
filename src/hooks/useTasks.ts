@@ -20,7 +20,7 @@ import { isExpired } from "../lib/time";
 /** Cat de des verificam expirarea si actualizam countdown-urile (ms). */
 const TICK_MS = 10_000;
 
-export function useTasks() {
+export function useTasks(onBonus?: (count: number) => void) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   /** "Ceasul" partajat; schimbarea lui reactualizeaza countdown-urile din UI. */
@@ -32,13 +32,18 @@ export function useTasks() {
   const tasksRef = useRef<Task[]>([]);
   tasksRef.current = tasks;
 
+  // Callback pentru bonusul de angajament, tinut intr-un ref ca sa fie mereu actual.
+  const onBonusRef = useRef<((count: number) => void) | undefined>(onBonus);
+  onBonusRef.current = onBonus;
+
   // Incarcarea initiala: mai intai curatam ce a expirat cat a fost aplicatia
-  // inchisa, apoi aducem lista din baza de date.
+  // inchisa (acordand bonusul pentru cele eligibile), apoi aducem lista.
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        await deleteExpiredTasks();
+        const bonus = await deleteExpiredTasks();
+        if (bonus > 0) onBonusRef.current?.(bonus);
         const all = await getAllTasks();
         if (alive) setTasks(all);
       } catch (err) {
@@ -56,14 +61,15 @@ export function useTasks() {
   // si stergem task-urile care tocmai au depasit 4h. Ruleaza si cand
   // fereastra e ascunsa in tray, pentru ca webview-ul ramane activ.
   useEffect(() => {
-    const tick = () => {
+    const tick = async () => {
       const t = Date.now();
       setNow(t);
       const survivors = tasksRef.current.filter(
         (task) => !isExpired(task.completedAt, t)
       );
       if (survivors.length !== tasksRef.current.length) {
-        void deleteExpiredTasks(t);
+        const bonus = await deleteExpiredTasks(t);
+        if (bonus > 0) onBonusRef.current?.(bonus);
         setTasks(survivors);
       }
     };
