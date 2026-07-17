@@ -798,10 +798,17 @@ body {
 
 .game {
   display: flex;
+<<<<<<< HEAD
   flex-direction: column;
   gap: 8px;
   width: 100%;
   padding: 10px 14px;
+=======
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+>>>>>>> 82bc27478e29a1f2863a7c51595a05c81201289a
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -814,6 +821,7 @@ body {
   border-color: var(--accent);
 }
 
+<<<<<<< HEAD
 .game__top {
   display: flex;
   align-items: center;
@@ -830,6 +838,12 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+=======
+.game__badge {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+>>>>>>> 82bc27478e29a1f2863a7c51595a05c81201289a
 }
 
 .game__level {

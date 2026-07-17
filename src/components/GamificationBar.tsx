@@ -31,6 +31,7 @@ export function GamificationBar({ level, into, need, progress, badge, toast, onO
   return (
     <div className="game-wrap">
       <button className="game" onClick={onOpen} title={t("gam.title")}>
+<<<<<<< HEAD
         <span className="game__top">
           <Medal color={badge ? badge.color : "var(--text-muted)"} />
           {badge && (
@@ -49,6 +50,19 @@ export function GamificationBar({ level, into, need, progress, badge, toast, onO
           </span>
           <span className="game__xp">{t("gam.xp", { into, need })}</span>
         </span>
+=======
+        <span className="game__badge">
+          <Medal color={badge ? badge.color : "var(--text-muted)"} />
+        </span>
+        <span className="game__level">{t("gam.level", { n: level })}</span>
+        <span className="game__bar">
+          <span
+            className="game__fill"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </span>
+        <span className="game__xp">{t("gam.xp", { into, need })}</span>
+>>>>>>> 82bc27478e29a1f2863a7c51595a05c81201289a
       </button>
 
       {toast && (
