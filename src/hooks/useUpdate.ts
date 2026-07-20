@@ -93,9 +93,12 @@ export function useUpdate() {
     }
   }, [t]);
 
-  // Verificare automata, o data, la pornirea aplicatiei.
+  // Verificare automata: la pornire si apoi periodic (la fiecare 30 min), ca sa
+  // prinda versiunile noi si cand aplicatia ramane deschisa mult timp.
   useEffect(() => {
     checkNow(true);
+    const id = window.setInterval(() => checkNow(true), 30 * 60 * 1000);
+    return () => window.clearInterval(id);
   }, [checkNow]);
 
   return { status, checkNow, install };

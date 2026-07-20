@@ -112,7 +112,9 @@ export function Header({
               strokeLinejoin="round"
             />
           </svg>
-          {updateAvailable && <span className="icon-btn__badge" aria-hidden="true" />}
+          {updateAvailable && (
+            <span className="icon-btn__badge" aria-hidden="true">!</span>
+          )}
         </button>
 
         <button className="icon-btn" onClick={onOpenSettings} aria-label={t("header.settings")} title={t("header.settings")}>
