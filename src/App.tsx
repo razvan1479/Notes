@@ -93,17 +93,22 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForced, setUpdateForced] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [dueReminders, setDueReminders] = useState<Task[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // Cand se gaseste un update (inclusiv la verificarea automata de la pornire),
-  // deschidem singuri pop-up-ul obligatoriu.
+  // Doar daca update-ul e gasit la PORNIRE deschidem pop-up-ul obligatoriu (care
+  // blocheaza aplicatia). Daca apare cat aplicatia e deja deschisa, NU blocam —
+  // se aprinde doar "!"-ul pe buton, iar userul actualizeaza manual.
   useEffect(() => {
-    if (update.status.kind === "available") setUpdateOpen(true);
-  }, [update.status.kind]);
+    if (update.startupHasUpdate) {
+      setUpdateForced(true);
+      setUpdateOpen(true);
+    }
+  }, [update.startupHasUpdate]);
 
   const addInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -184,6 +189,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
         onOpenCalendar={() => setCalendarOpen(true)}
         onCheckUpdate={() => {
+          setUpdateForced(false);
           setUpdateOpen(true);
           update.checkNow(false);
         }}
@@ -239,6 +245,7 @@ export default function App() {
       {updateOpen && (
         <UpdatePopup
           status={update.status}
+          forced={updateForced}
           onInstall={update.install}
           onClose={() => setUpdateOpen(false)}
           onRetry={() => update.checkNow(false)}

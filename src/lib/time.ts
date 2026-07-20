@@ -35,14 +35,14 @@ export function isExpired(completedAt: number | null, now: number = Date.now()):
 
 /** Formateaza o durata (ms) ca "23h 12m" sau "4m 30s" pentru countdown. */
 export function formatCountdown(ms: number): string {
-  if (ms <= 0) return "0s";
+  if (ms <= 0) return "0:00";
   const totalSec = Math.floor(ms / 1000);
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+  return `${m}:${pad(s)}`;
 }
 
 /** Data + ora lizibila, in functie de locale (ex. "en-US" / "ro-RO"). */

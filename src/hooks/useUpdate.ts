@@ -93,13 +93,23 @@ export function useUpdate() {
     }
   }, [t]);
 
-  // Verificare automata: la pornire si apoi periodic (la fiecare 30 min), ca sa
-  // prinda versiunile noi si cand aplicatia ramane deschisa mult timp.
+  // Semnaleaza daca update-ul a fost gasit chiar la PORNIREA aplicatiei
+  // (atunci pop-up-ul e obligatoriu). Verificarile periodice de mai tarziu NU
+  // seteaza asta — doar aprind semnul "!" pe buton, pentru update manual.
+  const [startupHasUpdate, setStartupHasUpdate] = useState(false);
+
   useEffect(() => {
-    checkNow(true);
+    let done = false;
+    (async () => {
+      await checkNow(true);
+      if (!done && updateRef.current) setStartupHasUpdate(true);
+    })();
     const id = window.setInterval(() => checkNow(true), 30 * 60 * 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      done = true;
+      window.clearInterval(id);
+    };
   }, [checkNow]);
 
-  return { status, checkNow, install };
+  return { status, checkNow, install, startupHasUpdate };
 }

@@ -8,18 +8,19 @@ import { useI18n } from "../i18n/i18n";
 
 interface Props {
   status: UpdateStatus;
+  forced: boolean;
   onInstall: () => void;
   onClose: () => void;
   onRetry: () => void;
 }
 
-export function UpdatePopup({ status, onInstall, onClose, onRetry }: Props) {
+export function UpdatePopup({ status, forced, onInstall, onClose, onRetry }: Props) {
   const { t } = useI18n();
 
-  const forced =
-    status.kind === "available" ||
-    status.kind === "downloading" ||
-    status.kind === "installing";
+  // In timpul descarcarii/instalarii nu se poate inchide (e in curs). Cand exista
+  // o versiune noua, se blocheaza DOAR daca pop-up-ul e "forced" (aparut la pornire).
+  const inProgress = status.kind === "downloading" || status.kind === "installing";
+  const mustStay = inProgress || (forced && status.kind === "available");
 
   const title = (() => {
     switch (status.kind) {
@@ -46,7 +47,7 @@ export function UpdatePopup({ status, onInstall, onClose, onRetry }: Props) {
   })();
 
   return (
-    <div className="overlay" onClick={forced ? undefined : onClose}>
+    <div className="overlay" onClick={mustStay ? undefined : onClose}>
       <div className="popup" onClick={(e) => e.stopPropagation()}>
         <div className="popup__icon" aria-hidden="true">
           {icon(status)}
@@ -62,9 +63,16 @@ export function UpdatePopup({ status, onInstall, onClose, onRetry }: Props) {
 
         <div className="popup__actions">
           {status.kind === "available" && (
-            <button className="popup__btn popup__btn--primary" onClick={onInstall}>
-              {t("update.btn_install")}
-            </button>
+            <>
+              <button className="popup__btn popup__btn--primary" onClick={onInstall}>
+                {t("update.btn_install")}
+              </button>
+              {!forced && (
+                <button className="popup__btn" onClick={onClose}>
+                  {t("update.btn_close")}
+                </button>
+              )}
+            </>
           )}
 
           {status.kind === "error" && (

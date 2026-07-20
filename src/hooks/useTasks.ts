@@ -19,8 +19,8 @@ import {
 } from "../db/database";
 import { isExpired } from "../lib/time";
 
-/** Cat de des verificam expirarea si actualizam countdown-urile (ms). */
-const TICK_MS = 10_000;
+/** Cat de des actualizam "now" (countdown live, din secunda in secunda). */
+const TICK_MS = 1000;
 
 export function useTasks(onBonus?: (count: number) => void) {
   const [tasks, setTasks] = useState<Task[]>([]);
