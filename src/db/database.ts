@@ -26,7 +26,8 @@ async function getDb(): Promise<Database> {
           position     INTEGER NOT NULL DEFAULT 0,
           priority     INTEGER NOT NULL DEFAULT 0,
           reminder_at  INTEGER,
-          unchecked_once INTEGER NOT NULL DEFAULT 0
+          unchecked_once INTEGER NOT NULL DEFAULT 0,
+          scheduled_at INTEGER
         );
       `);
       // Migrari pentru bazele create inainte de coloanele noi.
@@ -47,6 +48,11 @@ async function getDb(): Promise<Database> {
         await db.execute(
           `ALTER TABLE tasks ADD COLUMN unchecked_once INTEGER NOT NULL DEFAULT 0;`
         );
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN scheduled_at INTEGER;`);
       } catch {
         /* coloana exista deja */
       }
@@ -75,6 +81,7 @@ function rowToTask(r: TaskRow): Task {
     position: Number(r.position),
     priority: Number(r.priority) === 1,
     reminderAt: r.reminder_at == null ? null : Number(r.reminder_at),
+    scheduledAt: r.scheduled_at == null ? null : Number(r.scheduled_at),
   };
 }
 
@@ -110,6 +117,7 @@ export async function addTask(text: string): Promise<Task> {
     position: nextPos,
     priority: false,
     reminderAt: null,
+    scheduledAt: null,
   };
 }
 
@@ -140,6 +148,12 @@ export async function setTaskCompleted(id: number, completed: boolean): Promise<
       [id]
     );
   }
+}
+
+/** Seteaza (sau sterge, cu null) data programata (pentru calendar; fara alarma). */
+export async function setTaskScheduled(id: number, scheduledAt: number | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET scheduled_at = $1 WHERE id = $2;`, [scheduledAt, id]);
 }
 
 /** Seteaza (sau sterge, cu null) momentul de reminder pentru un task. */

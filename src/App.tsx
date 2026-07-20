@@ -35,7 +35,7 @@ function norm(s: string): string {
 export default function App() {
   const bonusRef = useRef<(count: number) => void>(() => {});
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
-  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
+  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
@@ -78,6 +78,16 @@ export default function App() {
     setSelectedId(null);
     setDueReminders([]);
   }, [resetAll, game]);
+
+  // Adaugare din calendar: cu "!" -> memento (alarma+pop-up) la ora exacta si prioritar;
+  // fara "!" -> doar programat pe zi la 00:00, fara alarma.
+  const handleCalendarAdd = useCallback(
+    (text: string, ts: number, priority: boolean) => {
+      if (priority) addWithReminder(text, ts, true);
+      else addScheduled(text, ts, false);
+    },
+    [addWithReminder, addScheduled]
+  );
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -236,7 +246,7 @@ export default function App() {
       )}
 
       {calendarOpen && (
-        <CalendarModal tasks={tasks} onClose={() => setCalendarOpen(false)} />
+        <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onClose={() => setCalendarOpen(false)} />
       )}
 
       {achievementsOpen && (

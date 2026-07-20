@@ -8,6 +8,7 @@ import { formatTime } from "../lib/time";
 
 interface Props {
   tasks: Task[];
+  onAdd: (text: string, reminderAt: number, priority: boolean) => void;
   onClose: () => void;
 }
 
@@ -15,18 +16,43 @@ function startOfDay(d: Date): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
-export function CalendarModal({ tasks, onClose }: Props) {
+export function CalendarModal({ tasks, onAdd, onClose }: Props) {
   const { t, locale } = useI18n();
   const today = new Date();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selected, setSelected] = useState<number>(startOfDay(today));
+  const [newText, setNewText] = useState("");
+  const [newPriority, setNewPriority] = useState(false);
+  const [newTime, setNewTime] = useState("06:00");
 
-  // Grupam task-urile cu reminder pe ziua (00:00) respectiva.
+  const handleAdd = () => {
+    const text = newText.trim();
+    if (!text) return;
+    let ts = selected; // ziua selectata la 00:00
+    if (newPriority) {
+      // Cu "!": memento la ora aleasa (custom) in ziua selectata.
+      const [h, m] = newTime.split(":").map(Number);
+      const d = new Date(selected);
+      d.setHours(h || 0, m || 0, 0, 0);
+      ts = d.getTime();
+    }
+    onAdd(text, ts, newPriority);
+    setNewText("");
+    setNewPriority(false);
+    setNewTime("06:00");
+  };
+
+  // Data de calendar a unui task: data programata (fara alarma) sau, daca are,
+  // mementoul cu clopotel.
+  const taskDate = (t: Task): number | null => t.scheduledAt ?? t.reminderAt;
+
+  // Grupam task-urile cu data pe ziua (00:00) respectiva.
   const byDay = useMemo(() => {
     const map = new Map<number, Task[]>();
     for (const task of tasks) {
-      if (task.reminderAt == null) continue;
-      const key = startOfDay(new Date(task.reminderAt));
+      const d = taskDate(task);
+      if (d == null) continue;
+      const key = startOfDay(new Date(d));
       const arr = map.get(key) ?? [];
       arr.push(task);
       map.set(key, arr);
@@ -66,7 +92,7 @@ export function CalendarModal({ tasks, onClose }: Props) {
   };
 
   const selectedTasks = (byDay.get(selected) ?? []).sort(
-    (a, b) => (a.reminderAt ?? 0) - (b.reminderAt ?? 0)
+    (a, b) => (taskDate(a) ?? 0) - (taskDate(b) ?? 0)
   );
   const todayKey = startOfDay(today);
 
@@ -118,12 +144,54 @@ export function CalendarModal({ tasks, onClose }: Props) {
           ) : (
             selectedTasks.map((task) => (
               <div key={task.id} className="calendar__item">
-                <span className="calendar__time">{formatTime(task.reminderAt!, locale)}</span>
+                <span className="calendar__time">{formatTime(taskDate(task)!, locale)}</span>
                 <span className="calendar__text">{task.text || "…"}</span>
               </div>
             ))
           )}
         </div>
+
+        <div className="calendar__add">
+          <button
+            className={`calendar__prio ${newPriority ? "calendar__prio--on" : ""}`}
+            title={t("task.priority_off")}
+            aria-pressed={newPriority}
+            onClick={() => setNewPriority((p) => !p)}
+          >
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path
+                d="M4 14V2.5M4 3h7.5l-1.5 2.5 1.5 2.5H4"
+                fill={newPriority ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <input
+            className="calendar__input"
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            placeholder={t("calendar.add_placeholder")}
+          />
+          <button className="calendar__add-btn" onClick={handleAdd} disabled={!newText.trim()}>
+            {t("calendar.add")}
+          </button>
+        </div>
+
+        {newPriority && (
+          <div className="calendar__time-row">
+            <span className="type-field__label">{t("calendar.time")}</span>
+            <input
+              type="time"
+              className="calendar__time-input"
+              value={newTime}
+              onChange={(e) => setNewTime(e.target.value)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

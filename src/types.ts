@@ -12,8 +12,10 @@ export interface Task {
   position: number;
   /** Task prioritar (afiseaza semnul exclamarii). */
   priority: boolean;
-  /** Momentul (ms) la care sa se declanseze un reminder, sau null. */
+  /** Momentul (ms) la care sa se declanseze un reminder (cu pop-up), sau null. */
   reminderAt: number | null;
+  /** Data programata pentru calendar (fara alarma), sau null. */
+  scheduledAt: number | null;
 }
 
 /** Forma bruta a randului din SQLite (numere in loc de boolean). */
@@ -26,6 +28,7 @@ export interface TaskRow {
   position: number;
   priority: number;
   reminder_at: number | null;
+  scheduled_at: number | null;
 }
 
 export type ThemeMode = "light" | "dark";

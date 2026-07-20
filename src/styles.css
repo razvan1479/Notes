@@ -151,9 +151,9 @@ body {
   height: 14px;
   padding: 0 3px;
   border-radius: 7px;
-  background: var(--danger);
-  border: 2px solid var(--bg);
-  color: #fff;
+  background: var(--bg);
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
   font-size: 10px;
   font-weight: 800;
   line-height: 1;
@@ -1229,6 +1229,89 @@ body {
   color: var(--text);
   word-break: break-word;
 }
+
+.calendar__add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.calendar__prio {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.calendar__prio--on {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.calendar__input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.calendar__input:focus {
+  border-color: var(--accent);
+}
+
+.calendar__add-btn {
+  flex-shrink: 0;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.calendar__add-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.calendar__time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.calendar__time-input {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
 
 /* Switch (toggle) */
 .switch {

@@ -14,6 +14,7 @@ import {
   setTaskCompleted,
   setTaskPriority,
   setTaskReminder,
+  setTaskScheduled,
   updateTaskText,
 } from "../db/database";
 import { isExpired } from "../lib/time";
@@ -85,6 +86,34 @@ export function useTasks(onBonus?: (count: number) => void) {
     setTasks((prev) => [...prev, task]);
   }, []);
 
+  /** Adauga un task programat pe o data (pentru calendar, FARA alarma/pop-up)
+      si, optional, prioritar. */
+  const addScheduled = useCallback(
+    async (text: string, scheduledAt: number, priority = false) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const task = await dbAdd(trimmed);
+      await setTaskScheduled(task.id, scheduledAt);
+      if (priority) await setTaskPriority(task.id, true);
+      setTasks((prev) => [...prev, { ...task, scheduledAt, priority }]);
+    },
+    []
+  );
+
+  /** Adauga un task cu memento (alarma + pop-up) la un moment exact si, optional,
+      prioritar (din calendar, cand pui semnul exclamarii). */
+  const addWithReminder = useCallback(
+    async (text: string, reminderAt: number, priority = false) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const task = await dbAdd(trimmed);
+      await setTaskReminder(task.id, reminderAt);
+      if (priority) await setTaskPriority(task.id, true);
+      setTasks((prev) => [...prev, { ...task, reminderAt, priority }]);
+    },
+    []
+  );
+
   const editText = useCallback(async (id: number, text: string) => {
     const trimmed = text.trim();
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, text: trimmed } : t)));
@@ -149,6 +178,8 @@ export function useTasks(onBonus?: (count: number) => void) {
     loading,
     now,
     add,
+    addScheduled,
+    addWithReminder,
     editText,
     toggle,
     remove,
