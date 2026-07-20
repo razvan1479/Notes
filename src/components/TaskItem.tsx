@@ -32,7 +32,7 @@ interface Props {
   isDragOver?: boolean;
 }
 
-/** Inel circular care arata cat din cele 4h a trecut, plus timpul ramas. */
+/** Inel circular care arata cat din cele 3h a trecut, plus timpul ramas. */
 function ExpiryIndicator({ completedAt, now }: { completedAt: number; now: number }) {
   const { t } = useI18n();
   const remaining = msUntilExpiry(completedAt, now) ?? 0;

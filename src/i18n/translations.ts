@@ -114,7 +114,7 @@ export const translations: Record<Lang, Dict> = {
     "reset.confirm": "Are you sure you want to reset everything?",
     "reset.yes": "Yes, reset",
     "reset.cancel": "Cancel",
-    "settings.foot": "Completed tasks auto-delete after 4h. Data is stored locally.",
+    "settings.foot": "Completed tasks auto-delete after 3h. Data is stored locally.",
     "settings.version": "Version {v}",
 
     "font.system": "System",
@@ -259,7 +259,7 @@ export const translations: Record<Lang, Dict> = {
     "reset.confirm": "Ești sigur că vrei să resetezi tot?",
     "reset.yes": "Da, resetează",
     "reset.cancel": "Anulează",
-    "settings.foot": "Task-urile bifate se șterg automat la 4h. Datele sunt salvate local.",
+    "settings.foot": "Task-urile bifate se șterg automat la 3h. Datele sunt salvate local.",
     "settings.version": "Versiunea {v}",
 
     "font.system": "Sistem",

@@ -129,7 +129,7 @@ export async function updateTaskText(id: number, text: string): Promise<void> {
 
 /**
  * Bifeaza / debifeaza un task.
- * - La bifare setam completed_at = acum (porneste cronometrul de 4h).
+ * - La bifare setam completed_at = acum (porneste cronometrul de 3h).
  * - La debifare setam completed_at = NULL (reseteaza complet cronometrul).
  */
 export async function setTaskCompleted(id: number, completed: boolean): Promise<void> {
@@ -184,13 +184,13 @@ export async function deleteTask(id: number): Promise<void> {
 }
 
 /**
- * Sterge toate task-urile bifate care au depasit cele 4h.
+ * Sterge toate task-urile bifate care au depasit cele 3h.
  * Calculul se face pe baza timestamp-ului salvat, deci ramane corect
  * indiferent cat timp a fost aplicatia inchisa.
  * @returns numarul de task-uri sterse.
  */
 /**
- * Sterge task-urile bifate care au depasit cele 4h si intoarce cate dintre ele
+ * Sterge task-urile bifate care au depasit cele 3h si intoarce cate dintre ele
  * erau eligibile pentru bonusul de angajament (bifate si niciodata debifate).
  */
 export async function deleteExpiredTasks(now: number = Date.now()): Promise<number> {
