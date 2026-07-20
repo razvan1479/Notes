@@ -108,6 +108,12 @@ export function useGamification(tasks: Task[]) {
     setState((s) => ({ ...s, bonusXp: s.bonusXp + count * BONUS_PER_TASK }));
   }, []);
 
+  // Reset total al progresului (XP bonus, total terminate, badge-uri).
+  const reset = useCallback(() => {
+    setState({ lifetimeCompleted: 0, bonusXp: 0, rewarded: [], unlocked: [] });
+    setToast(null);
+  }, []);
+
   const achievements = ACHIEVEMENTS.map((a) => ({
     ...a,
     unlocked: state.unlocked.includes(a.id),
@@ -121,6 +127,7 @@ export function useGamification(tasks: Task[]) {
     badge: currentBadge(state.unlocked),
     award,
     addBonus,
+    reset,
     toast,
     dismissToast: () => setToast(null),
   };

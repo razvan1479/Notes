@@ -15,13 +15,15 @@ interface Props {
   onSetTheme: (t: ThemeMode) => void;
   onClose: () => void;
   colors: ReturnType<typeof useColors>;
+  onReset: () => void;
 }
 
-export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
+export function Settings({ theme, onSetTheme, onClose, colors, onReset }: Props) {
   const { t, lang, setLang } = useI18n();
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [version, setVersion] = useState<string | null>(null);
   const type = useTypography();
 
@@ -165,11 +167,50 @@ export function Settings({ theme, onSetTheme, onClose, colors }: Props) {
 
         {error && <p className="settings__error">{error}</p>}
 
+        <div className="settings__row">
+          <div className="settings__label">
+            <span className="settings__title">{t("settings.reset_title")}</span>
+            <span className="settings__desc">{t("settings.reset_desc")}</span>
+          </div>
+          <button className="btn btn--danger" onClick={() => setConfirmReset(true)}>
+            {t("settings.reset_btn")}
+          </button>
+        </div>
+
         <p className="settings__foot">
           {t("settings.foot")}
           {version && <span className="settings__version">{t("settings.version", { v: version })}</span>}
         </p>
       </div>
+
+      {confirmReset && (
+        <div className="overlay" onClick={() => setConfirmReset(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <div className="popup__icon popup__icon--danger" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="M12 7v6M12 16.5v.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h2 className="popup__title">{t("reset.confirm")}</h2>
+            <div className="popup__actions">
+              <button
+                className="popup__btn popup__btn--danger"
+                onClick={() => {
+                  onReset();
+                  setConfirmReset(false);
+                  onClose();
+                }}
+              >
+                {t("reset.yes")}
+              </button>
+              <button className="popup__btn" onClick={() => setConfirmReset(false)}>
+                {t("reset.cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

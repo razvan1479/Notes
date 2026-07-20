@@ -1358,6 +1358,32 @@ body {
   cursor: default;
 }
 
+.btn--danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.popup__icon--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.popup__btn--danger {
+  border: none;
+  background: var(--danger);
+  color: #fff;
+}
+
+.popup__btn--danger:hover {
+  opacity: 0.9;
+}
+
 /* ---------- Scrollbar ---------- */
 .list::-webkit-scrollbar {
   width: 10px;

@@ -35,7 +35,7 @@ function norm(s: string): string {
 export default function App() {
   const bonusRef = useRef<(count: number) => void>(() => {});
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
-  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, reorderActive, tasksRef } = useTasks(onBonus);
+  const { tasks, loading, now, add, editText, toggle, remove, togglePriority, setReminder, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
@@ -70,6 +70,14 @@ export default function App() {
     },
     [setReminder]
   );
+
+  // Reset total: sterge task-urile si progresul, si curata starea din UI.
+  const handleReset = useCallback(async () => {
+    await resetAll();
+    game.reset();
+    setSelectedId(null);
+    setDueReminders([]);
+  }, [resetAll, game]);
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -214,6 +222,7 @@ export default function App() {
           onSetTheme={setTheme}
           onClose={() => setSettingsOpen(false)}
           colors={colors}
+          onReset={handleReset}
         />
       )}
 

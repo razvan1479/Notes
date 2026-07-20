@@ -7,6 +7,7 @@ import type { Task } from "../types";
 import {
   addTask as dbAdd,
   deleteExpiredTasks,
+  deleteAllTasks,
   deleteTask as dbDelete,
   getAllTasks,
   persistOrder,
@@ -124,6 +125,12 @@ export function useTasks(onBonus?: (count: number) => void) {
     await dbDelete(id);
   }, []);
 
+  /** Sterge toate task-urile (reset total). */
+  const resetAll = useCallback(async () => {
+    setTasks([]);
+    await deleteAllTasks();
+  }, []);
+
   /** Reordoneaza task-urile active dupa drag & drop si salveaza pozitiile. */
   const reorderActive = useCallback(async (orderedActiveIds: number[]) => {
     const prev = tasksRef.current;
@@ -147,6 +154,7 @@ export function useTasks(onBonus?: (count: number) => void) {
     remove,
     togglePriority,
     setReminder,
+    resetAll,
     reorderActive,
     tasksRef,
   };

@@ -157,6 +157,12 @@ export async function setTaskPriority(id: number, priority: boolean): Promise<vo
   ]);
 }
 
+/** Sterge TOATE task-urile (folosit de resetarea totala). */
+export async function deleteAllTasks(): Promise<void> {
+  const db = await getDb();
+  await db.execute(`DELETE FROM tasks;`);
+}
+
 /** Sterge definitiv un task. */
 export async function deleteTask(id: number): Promise<void> {
   const db = await getDb();
