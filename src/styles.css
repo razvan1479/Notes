@@ -1214,8 +1214,52 @@ body {
 
 .calendar__item {
   display: flex;
+  align-items: center;
   gap: 10px;
   font-size: 13px;
+}
+
+.calendar__item .calendar__text {
+  flex: 1;
+  min-width: 0;
+  cursor: text;
+}
+
+.calendar__edit {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.calendar__del {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.calendar__item:hover .calendar__del {
+  opacity: 1;
+}
+
+.calendar__del:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .calendar__time {

@@ -9,6 +9,8 @@ import { formatTime } from "../lib/time";
 interface Props {
   tasks: Task[];
   onAdd: (text: string, reminderAt: number, priority: boolean) => void;
+  onEdit: (id: number, text: string) => void;
+  onDelete: (id: number) => void;
   onClose: () => void;
 }
 
@@ -16,7 +18,7 @@ function startOfDay(d: Date): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
-export function CalendarModal({ tasks, onAdd, onClose }: Props) {
+export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props) {
   const { t, locale } = useI18n();
   const today = new Date();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
@@ -24,6 +26,17 @@ export function CalendarModal({ tasks, onAdd, onClose }: Props) {
   const [newText, setNewText] = useState("");
   const [newPriority, setNewPriority] = useState(false);
   const [newTime, setNewTime] = useState("06:00");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const startEdit = (id: number, text: string) => {
+    setEditingId(id);
+    setEditText(text);
+  };
+  const commitEdit = () => {
+    if (editingId != null) onEdit(editingId, editText.trim());
+    setEditingId(null);
+  };
 
   const handleAdd = () => {
     const text = newText.trim();
@@ -145,7 +158,44 @@ export function CalendarModal({ tasks, onAdd, onClose }: Props) {
             selectedTasks.map((task) => (
               <div key={task.id} className="calendar__item">
                 <span className="calendar__time">{formatTime(taskDate(task)!, locale)}</span>
-                <span className="calendar__text">{task.text || "…"}</span>
+                {editingId === task.id ? (
+                  <input
+                    className="calendar__edit"
+                    value={editText}
+                    autoFocus
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitEdit();
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="calendar__text"
+                    title={t("calendar.edit_hint")}
+                    onDoubleClick={() => startEdit(task.id, task.text)}
+                  >
+                    {task.text || "…"}
+                  </span>
+                )}
+                <button
+                  className="calendar__del"
+                  aria-label={t("task.delete")}
+                  title={t("task.delete")}
+                  onClick={() => onDelete(task.id)}
+                >
+                  <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                    <path
+                      d="M2.75 4h10.5M6 4V2.75h4V4M4.25 4l.5 9.25a1 1 0 0 0 1 .95h4.5a1 1 0 0 0 1-.95l.5-9.25M6.5 6.5v5M9.5 6.5v5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
             ))
           )}

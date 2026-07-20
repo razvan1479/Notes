@@ -265,7 +265,7 @@ export default function App() {
       )}
 
       {calendarOpen && (
-        <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onClose={() => setCalendarOpen(false)} />
+        <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onEdit={editText} onDelete={remove} onClose={() => setCalendarOpen(false)} />
       )}
 
       {achievementsOpen && (
