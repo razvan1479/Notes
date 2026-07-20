@@ -10,6 +10,7 @@ import { Settings } from "./components/Settings";
 import { UpdatePopup } from "./components/UpdatePopup";
 import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
+import { ReminderAlert } from "./components/ReminderAlert";
 import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
 import { useTasks } from "./hooks/useTasks";
@@ -18,6 +19,8 @@ import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
 import { useReminders } from "./hooks/useReminders";
+import { playReminderSound } from "./lib/sound";
+import type { Task } from "./types";
 import { useGamification } from "./hooks/useGamification";
 import { useI18n } from "./i18n/i18n";
 
@@ -39,8 +42,34 @@ export default function App() {
   const game = useGamification(tasks);
   bonusRef.current = game.addBonus;
   const { t } = useI18n();
-  const clearReminder = useCallback((id: number) => setReminder(id, null), [setReminder]);
-  useReminders(tasksRef, clearReminder, t("reminder.title"));
+  // Cand un memento devine scadent: sunet, aducem fereastra in fata si aratam pop-up-ul.
+  const handleDue = useCallback(
+    (tasks: Task[]) => {
+      setDueReminders((prev) => {
+        const ids = new Set(prev.map((x) => x.id));
+        return [...prev, ...tasks.filter((x) => !ids.has(x.id))];
+      });
+      playReminderSound();
+      if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+        import("@tauri-apps/api/window").then(({ getCurrentWindow }) => {
+          const w = getCurrentWindow();
+          w.show().catch(() => {});
+          w.unminimize().catch(() => {});
+          w.setFocus().catch(() => {});
+        });
+      }
+    },
+    []
+  );
+  useReminders(tasksRef, handleDue, t("reminder.title"));
+
+  const resolveReminder = useCallback(
+    (id: number, snooze: boolean) => {
+      setReminder(id, snooze ? Date.now() + 5 * 60 * 1000 : null);
+      setDueReminders((prev) => prev.filter((x) => x.id !== id));
+    },
+    [setReminder]
+  );
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -49,6 +78,7 @@ export default function App() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
+  const [dueReminders, setDueReminders] = useState<Task[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // Cand se gaseste un update (inclusiv la verificarea automata de la pornire),
@@ -207,6 +237,18 @@ export default function App() {
           completed={game.completed}
           achievements={game.achievements}
           onClose={() => setAchievementsOpen(false)}
+        />
+      )}
+
+      {dueReminders.length > 0 && (
+        <ReminderAlert
+          tasks={dueReminders}
+          onSnooze={(id) => resolveReminder(id, true)}
+          onDismiss={(id) => resolveReminder(id, false)}
+          onDismissAll={() => {
+            dueReminders.forEach((x) => setReminder(x.id, null));
+            setDueReminders([]);
+          }}
         />
       )}
 
