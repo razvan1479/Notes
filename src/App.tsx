@@ -118,13 +118,25 @@ export default function App() {
   selectedRef.current = selectedId;
 
   // Filtrare instantanee dupa cautare.
-  const filtered = useMemo(() => {
-    if (!query.trim()) return tasks;
-    const q = norm(query);
-    return tasks.filter((t) => norm(t.text).includes(q));
-  }, [tasks, query]);
+  // Task-urile programate din calendar stau ASCUNSE in lista principala pana
+  // le vine ziua: apar abia cand data programata e azi sau in trecut. In
+  // calendar se vad oricand, la data lor. Folosim "now" ca ceas, deci la miezul
+  // noptii task-ul zilei apare singur, fara restart.
+  const visibleTasks = useMemo(
+    () => tasks.filter((t) => t.scheduledAt == null || t.scheduledAt <= now),
+    [tasks, now]
+  );
 
-  const activeCount = useMemo(() => tasks.filter((t) => !t.completed).length, [tasks]);
+  const filtered = useMemo(() => {
+    if (!query.trim()) return visibleTasks;
+    const q = norm(query);
+    return visibleTasks.filter((t) => norm(t.text).includes(q));
+  }, [visibleTasks, query]);
+
+  const activeCount = useMemo(
+    () => visibleTasks.filter((t) => !t.completed).length,
+    [visibleTasks]
+  );
 
   const openSearch = useCallback(() => {
     setSearchOpen(true);
