@@ -221,49 +221,53 @@ export function TaskItem(props: Props) {
         <ExpiryIndicator completedAt={task.completedAt} now={now} />
       )}
 
-      <button
-        className={`task__prio-btn ${task.reminderAt != null ? "task__prio-btn--on" : ""}`}
-        style={task.reminderAt != null ? { color: "var(--accent)" } : undefined}
-        aria-label={t("task.reminder")}
-        title={t("task.reminder")}
-        onClick={(e) => {
-          e.stopPropagation();
-          props.onOpenReminder(task.id);
-        }}
-      >
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path
-            d="M8 1.6a3.6 3.6 0 0 0-3.6 3.6c0 3.4-1.5 4.4-1.5 4.4h10.2c0 0-1.5-1-1.5-4.4A3.6 3.6 0 0 0 8 1.6zM6.4 12.4a1.6 1.6 0 0 0 3.2 0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      {!task.completed && (
+        <button
+          className={`task__prio-btn ${task.reminderAt != null ? "task__prio-btn--on" : ""}`}
+          style={task.reminderAt != null ? { color: "var(--accent)" } : undefined}
+          aria-label={t("task.reminder")}
+          title={t("task.reminder")}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onOpenReminder(task.id);
+          }}
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              d="M8 1.6a3.6 3.6 0 0 0-3.6 3.6c0 3.4-1.5 4.4-1.5 4.4h10.2c0 0-1.5-1-1.5-4.4A3.6 3.6 0 0 0 8 1.6zM6.4 12.4a1.6 1.6 0 0 0 3.2 0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
 
-      <button
-        className={`task__prio-btn ${task.priority ? "task__prio-btn--on" : ""}`}
-        aria-label={task.priority ? t("task.priority_on") : t("task.priority_off")}
-        aria-pressed={task.priority}
-        title={task.priority ? t("task.priority_on") : t("task.priority_off")}
-        onClick={(e) => {
-          e.stopPropagation();
-          props.onTogglePriority(task.id);
-        }}
-      >
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path
-            d="M4 14V2.5M4 3h7.5l-1.5 2.5 1.5 2.5H4"
-            fill={task.priority ? "currentColor" : "none"}
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      {!task.completed && (
+        <button
+          className={`task__prio-btn ${task.priority ? "task__prio-btn--on" : ""}`}
+          aria-label={task.priority ? t("task.priority_on") : t("task.priority_off")}
+          aria-pressed={task.priority}
+          title={task.priority ? t("task.priority_on") : t("task.priority_off")}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onTogglePriority(task.id);
+          }}
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              d="M4 14V2.5M4 3h7.5l-1.5 2.5 1.5 2.5H4"
+              fill={task.priority ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
 
       <button
         className="task__delete"
