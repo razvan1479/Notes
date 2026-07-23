@@ -11,6 +11,7 @@ interface Props {
   onToggleSearch: () => void;
   onToggleTheme: () => void;
   onOpenCalendar: () => void;
+  settingsDot: boolean;
   onCheckUpdate: () => void;
   onOpenSettings: () => void;
 }
@@ -22,6 +23,7 @@ export function Header({
   onToggleSearch,
   onToggleTheme,
   onOpenCalendar,
+  settingsDot,
   onCheckUpdate,
   onOpenSettings,
 }: Props) {
@@ -127,6 +129,7 @@ export function Header({
               strokeLinecap="round"
             />
           </svg>
+          {settingsDot && <span className="cl__dot cl__dot--corner" aria-hidden="true" />}
         </button>
       </div>
     </header>

@@ -11,6 +11,7 @@ import { UpdatePopup } from "./components/UpdatePopup";
 import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
 import { ReminderAlert } from "./components/ReminderAlert";
+import { ChangelogModal } from "./components/ChangelogModal";
 import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
 import { useTasks } from "./hooks/useTasks";
@@ -22,6 +23,7 @@ import { useReminders } from "./hooks/useReminders";
 import { playReminderSound } from "./lib/sound";
 import type { Task } from "./types";
 import { useGamification } from "./hooks/useGamification";
+import { useChangelog } from "./hooks/useChangelog";
 import { useI18n } from "./i18n/i18n";
 
 /** Normalizeaza pentru cautare fara diacritice si case-insensitive. */
@@ -40,6 +42,7 @@ export default function App() {
   const update = useUpdate();
   const colors = useColors(theme);
   const game = useGamification(tasks);
+  const changelog = useChangelog();
   bonusRef.current = game.addBonus;
   const { t } = useI18n();
   // Cand un memento devine scadent: sunet, aducem fereastra in fata si aratam pop-up-ul.
@@ -103,6 +106,7 @@ export default function App() {
   const [updateForced, setUpdateForced] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [changelogOpen, setChangelogOpen] = useState(false);
   const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [dueReminders, setDueReminders] = useState<Task[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -207,6 +211,7 @@ export default function App() {
         onToggleSearch={() => (searchOpen ? closeSearch() : openSearch())}
         onToggleTheme={toggleTheme}
         onOpenCalendar={() => setCalendarOpen(true)}
+        settingsDot={changelog.unreadCount > 0}
         onCheckUpdate={() => {
           setUpdateForced(false);
           setUpdateOpen(true);
@@ -258,6 +263,8 @@ export default function App() {
           onClose={() => setSettingsOpen(false)}
           colors={colors}
           onReset={handleReset}
+          changelogUnread={changelog.unreadCount}
+          onOpenChangelog={() => setChangelogOpen(true)}
         />
       )}
 
@@ -273,6 +280,14 @@ export default function App() {
 
       {calendarOpen && (
         <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onEdit={editText} onDelete={remove} onClose={() => setCalendarOpen(false)} />
+      )}
+
+      {changelogOpen && (
+        <ChangelogModal
+          isRead={changelog.isRead}
+          onMarkAllRead={changelog.markAllRead}
+          onClose={() => setChangelogOpen(false)}
+        />
       )}
 
       {achievementsOpen && (

@@ -16,9 +16,19 @@ interface Props {
   onClose: () => void;
   colors: ReturnType<typeof useColors>;
   onReset: () => void;
+  changelogUnread: number;
+  onOpenChangelog: () => void;
 }
 
-export function Settings({ theme, onSetTheme, onClose, colors, onReset }: Props) {
+export function Settings({
+  theme,
+  onSetTheme,
+  onClose,
+  colors,
+  onReset,
+  changelogUnread,
+  onOpenChangelog,
+}: Props) {
   const { t, lang, setLang } = useI18n();
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -166,6 +176,19 @@ export function Settings({ theme, onSetTheme, onClose, colors, onReset }: Props)
         </div>
 
         {error && <p className="settings__error">{error}</p>}
+
+        <div className={`settings__row ${changelogUnread > 0 ? "settings__row--highlight" : ""}`}>
+          <div className="settings__label">
+            <span className="settings__title">
+              {changelogUnread > 0 && <span className="cl__dot" aria-hidden="true" />}
+              {t("settings.changelog_title")}
+            </span>
+            <span className="settings__desc">{t("settings.changelog_desc")}</span>
+          </div>
+          <button className="btn" onClick={onOpenChangelog}>
+            {t("settings.changelog_btn")}
+          </button>
+        </div>
 
         <div className="settings__row">
           <div className="settings__label">
