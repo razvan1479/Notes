@@ -28,12 +28,14 @@ export function useChangelog() {
 
   const isRead = useCallback((version: string) => read.includes(version), [read]);
 
-  const unreadCount = CHANGELOG.filter((e) => !read.includes(e.version)).length;
+  /** Versiunile inca necitite (pentru pop-up-ul de dupa update). */
+  const unread = CHANGELOG.filter((e) => !read.includes(e.version));
+  const unreadCount = unread.length;
 
   /** Marcheaza toate versiunile ca citite (la deschiderea istoricului). */
   const markAllRead = useCallback(() => {
     setRead(CHANGELOG.map((e) => e.version));
   }, []);
 
-  return { isRead, unreadCount, markAllRead };
+  return { isRead, unread, unreadCount, markAllRead };
 }

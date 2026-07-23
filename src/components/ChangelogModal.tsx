@@ -1,14 +1,16 @@
-// Istoricul versiunilor: fiecare versiune cu data si lista schimbarilor.
-// Versiunile necitite sunt evidentiate (bulina + eticheta "nou"); dupa
-// deschidere se marcheaza citite.
+// Istoricul versiunilor, in doua moduri:
+//  - mode "new": pop-up cu noutatile inca necitite, cu buton "Am inteles".
+//    Se inchide DOAR de la buton (altfel reapare la urmatoarea pornire).
+//  - mode "all": istoricul complet, deschis oricand din bara de sus.
 
-import { useEffect } from "react";
-import { CHANGELOG, type ChangeType } from "../changelog";
+import { CHANGELOG, type ChangeType, type ChangelogEntry } from "../changelog";
 import { useI18n } from "../i18n/i18n";
 
 interface Props {
+  mode: "new" | "all";
+  entries?: ChangelogEntry[];
   isRead: (version: string) => boolean;
-  onMarkAllRead: () => void;
+  onAcknowledge: () => void;
   onClose: () => void;
 }
 
@@ -18,15 +20,9 @@ const TAG_CLASS: Record<ChangeType, string> = {
   improved: "cl__tag--imp",
 };
 
-export function ChangelogModal({ isRead, onMarkAllRead, onClose }: Props) {
+export function ChangelogModal({ mode, entries, isRead, onAcknowledge, onClose }: Props) {
   const { t, lang, locale } = useI18n();
-
-  // La deschidere marcam tot ca citit (dar randam starea de dinainte, ca sa se
-  // vada ce era nou in sesiunea asta).
-  useEffect(() => {
-    onMarkAllRead();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const list = mode === "new" ? entries ?? [] : CHANGELOG;
 
   const formatDate = (iso: string) => {
     const d = new Date(iso + "T00:00:00");
@@ -38,12 +34,14 @@ export function ChangelogModal({ isRead, onMarkAllRead, onClose }: Props) {
     <div className="overlay" onClick={onClose}>
       <div className="changelog" onClick={(e) => e.stopPropagation()}>
         <div className="settings__head">
-          <h2>{t("changelog.title")}</h2>
+          <h2>{mode === "new" ? t("changelog.new_title") : t("changelog.title")}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="×">×</button>
         </div>
 
-        {CHANGELOG.map((entry) => {
-          const unread = !isRead(entry.version);
+        {mode === "new" && <p className="cl__intro">{t("changelog.new_intro")}</p>}
+
+        {list.map((entry) => {
+          const unread = mode === "new" || !isRead(entry.version);
           return (
             <div
               key={entry.version}
@@ -69,6 +67,14 @@ export function ChangelogModal({ isRead, onMarkAllRead, onClose }: Props) {
             </div>
           );
         })}
+
+        {mode === "new" && (
+          <div className="popup__actions">
+            <button className="popup__btn popup__btn--primary" onClick={onAcknowledge}>
+              {t("changelog.ack")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

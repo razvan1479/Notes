@@ -106,7 +106,22 @@ export default function App() {
   const [updateForced, setUpdateForced] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  // Istoricul se deschide DOAR de la iconita din bara de sus.
+  // Daca exista versiuni necitite, se arata intai "ce e nou" (mod "new");
+  // dupa "Am inteles" trecem la istoricul complet (mod "all").
   const [changelogOpen, setChangelogOpen] = useState(false);
+  const [changelogMode, setChangelogMode] = useState<"new" | "all">("all");
+  const [newsEntries, setNewsEntries] = useState<typeof changelog.unread>([]);
+
+  const openChangelog = useCallback(() => {
+    if (changelog.unreadCount > 0) {
+      setNewsEntries(changelog.unread);
+      setChangelogMode("new");
+    } else {
+      setChangelogMode("all");
+    }
+    setChangelogOpen(true);
+  }, [changelog.unreadCount, changelog.unread]);
   const [reminderTaskId, setReminderTaskId] = useState<number | null>(null);
   const [dueReminders, setDueReminders] = useState<Task[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -211,7 +226,8 @@ export default function App() {
         onToggleSearch={() => (searchOpen ? closeSearch() : openSearch())}
         onToggleTheme={toggleTheme}
         onOpenCalendar={() => setCalendarOpen(true)}
-        settingsDot={changelog.unreadCount > 0}
+        changelogDot={changelog.unreadCount > 0}
+        onOpenChangelog={openChangelog}
         onCheckUpdate={() => {
           setUpdateForced(false);
           setUpdateOpen(true);
@@ -264,7 +280,7 @@ export default function App() {
           colors={colors}
           onReset={handleReset}
           changelogUnread={changelog.unreadCount}
-          onOpenChangelog={() => setChangelogOpen(true)}
+          onOpenChangelog={openChangelog}
         />
       )}
 
@@ -284,8 +300,14 @@ export default function App() {
 
       {changelogOpen && (
         <ChangelogModal
+          mode={changelogMode}
+          entries={newsEntries}
           isRead={changelog.isRead}
-          onMarkAllRead={changelog.markAllRead}
+          onAcknowledge={() => {
+            // "Am inteles": marcam citit si trecem la istoricul complet.
+            changelog.markAllRead();
+            setChangelogMode("all");
+          }}
           onClose={() => setChangelogOpen(false)}
         />
       )}

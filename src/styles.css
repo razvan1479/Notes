@@ -1666,3 +1666,10 @@ body {
   padding-left: 10px;
   padding-right: 10px;
 }
+
+.cl__intro {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 12px;
+}

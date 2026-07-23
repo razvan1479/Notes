@@ -11,7 +11,8 @@ interface Props {
   onToggleSearch: () => void;
   onToggleTheme: () => void;
   onOpenCalendar: () => void;
-  settingsDot: boolean;
+  changelogDot: boolean;
+  onOpenChangelog: () => void;
   onCheckUpdate: () => void;
   onOpenSettings: () => void;
 }
@@ -23,7 +24,8 @@ export function Header({
   onToggleSearch,
   onToggleTheme,
   onOpenCalendar,
-  settingsDot,
+  changelogDot,
+  onOpenChangelog,
   onCheckUpdate,
   onOpenSettings,
 }: Props) {
@@ -92,6 +94,25 @@ export function Header({
         </button>
 
         <button
+          className="icon-btn"
+          onClick={onOpenChangelog}
+          aria-label={t("header.changelog")}
+          title={t("header.changelog")}
+        >
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+            <path
+              d="M3 8.2v3.6a1 1 0 0 0 1 1h2.2l4.6 3.1a.6.6 0 0 0 .95-.5V4.6a.6.6 0 0 0-.95-.5L6.2 7.2H4a1 1 0 0 0-1 1z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinejoin="round"
+            />
+            <path d="M14.6 7.4a3.6 3.6 0 0 1 0 5.2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+          {changelogDot && <span className="cl__dot cl__dot--corner" aria-hidden="true" />}
+        </button>
+
+        <button
           className="icon-btn icon-btn--update"
           onClick={onCheckUpdate}
           aria-label={t("header.update")}
@@ -129,7 +150,6 @@ export function Header({
               strokeLinecap="round"
             />
           </svg>
-          {settingsDot && <span className="cl__dot cl__dot--corner" aria-hidden="true" />}
         </button>
       </div>
     </header>
