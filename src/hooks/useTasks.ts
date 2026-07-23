@@ -101,15 +101,17 @@ export function useTasks(onBonus?: (count: number) => void) {
   );
 
   /** Adauga un task cu memento (alarma + pop-up) la un moment exact si, optional,
-      prioritar (din calendar, cand pui semnul exclamarii). */
+      prioritar (din calendar, cand pui semnul exclamarii). scheduledAt tine
+      task-ul ascuns din lista principala pana ii vine ziua. */
   const addWithReminder = useCallback(
-    async (text: string, reminderAt: number, priority = false) => {
+    async (text: string, reminderAt: number, priority = false, scheduledAt: number | null = null) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       const task = await dbAdd(trimmed);
       await setTaskReminder(task.id, reminderAt);
+      if (scheduledAt != null) await setTaskScheduled(task.id, scheduledAt);
       if (priority) await setTaskPriority(task.id, true);
-      setTasks((prev) => [...prev, { ...task, reminderAt, priority }]);
+      setTasks((prev) => [...prev, { ...task, reminderAt, scheduledAt, priority }]);
     },
     []
   );
