@@ -1674,3 +1674,9 @@ body {
   line-height: 1.45;
   margin-bottom: 12px;
 }
+
+.calendar__prio--time {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}

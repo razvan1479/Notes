@@ -85,16 +85,11 @@ export default function App() {
   // Adaugare din calendar: cu "!" -> memento (alarma+pop-up) la ora exacta si prioritar;
   // fara "!" -> doar programat pe zi la 00:00, fara alarma.
   const handleCalendarAdd = useCallback(
-    (text: string, ts: number, priority: boolean) => {
-      if (priority) {
-        // Ziua (00:00) a mementoului: task-ul ramane ascuns din lista pana atunci,
-        // iar alarma suna la ora exacta aleasa.
-        const d = new Date(ts);
-        const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-        addWithReminder(text, ts, true, dayStart);
-      } else {
-        addScheduled(text, ts, false);
-      }
+    (text: string, dayStart: number, priority: boolean, reminderAt: number | null) => {
+      // Cu ora aleasa -> memento (alarma) la acea ora, dar task-ul ramane ascuns
+      // din lista pana in ziua lui. Fara ora -> doar programat pe zi, la 00:00.
+      if (reminderAt != null) addWithReminder(text, reminderAt, priority, dayStart);
+      else addScheduled(text, dayStart, priority);
     },
     [addWithReminder, addScheduled]
   );

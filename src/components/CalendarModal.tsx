@@ -8,7 +8,7 @@ import { formatTime } from "../lib/time";
 
 interface Props {
   tasks: Task[];
-  onAdd: (text: string, reminderAt: number, priority: boolean) => void;
+  onAdd: (text: string, dayStart: number, priority: boolean, reminderAt: number | null) => void;
   onEdit: (id: number, text: string) => void;
   onDelete: (id: number) => void;
   onClose: () => void;
@@ -25,6 +25,7 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
   const [selected, setSelected] = useState<number>(startOfDay(today));
   const [newText, setNewText] = useState("");
   const [newPriority, setNewPriority] = useState(false);
+  const [newHasTime, setNewHasTime] = useState(false);
   const [newTime, setNewTime] = useState("06:00");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
@@ -41,23 +42,28 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
   const handleAdd = () => {
     const text = newText.trim();
     if (!text) return;
-    let ts = selected; // ziua selectata la 00:00
-    if (newPriority) {
-      // Cu "!": memento la ora aleasa (custom) in ziua selectata.
+    // Ora e optionala si independenta de prioritate. Cu ora -> memento (alarma);
+    // fara ora -> doar programat pe ziua selectata, la 00:00.
+    let reminderAt: number | null = null;
+    if (newHasTime) {
       const [h, m] = newTime.split(":").map(Number);
       const d = new Date(selected);
       d.setHours(h || 0, m || 0, 0, 0);
-      ts = d.getTime();
+      reminderAt = d.getTime();
     }
-    onAdd(text, ts, newPriority);
+    onAdd(text, selected, newPriority, reminderAt);
     setNewText("");
     setNewPriority(false);
+    setNewHasTime(false);
     setNewTime("06:00");
   };
 
   // Data de calendar a unui task: data programata (fara alarma) sau, daca are,
   // mementoul cu clopotel.
+  // Pentru gruparea pe zile: oricare dintre cele doua date.
   const taskDate = (t: Task): number | null => t.scheduledAt ?? t.reminderAt;
+  // Pentru afisarea orei: ora mementoului conteaza, nu 00:00-ul zilei programate.
+  const taskTime = (t: Task): number | null => t.reminderAt ?? t.scheduledAt;
 
   // Grupam task-urile cu data pe ziua (00:00) respectiva.
   const byDay = useMemo(() => {
@@ -105,7 +111,7 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
   };
 
   const selectedTasks = (byDay.get(selected) ?? []).sort(
-    (a, b) => (taskDate(a) ?? 0) - (taskDate(b) ?? 0)
+    (a, b) => (taskTime(a) ?? 0) - (taskTime(b) ?? 0)
   );
   const todayKey = startOfDay(today);
 
@@ -157,7 +163,7 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
           ) : (
             selectedTasks.map((task) => (
               <div key={task.id} className="calendar__item">
-                <span className="calendar__time">{formatTime(taskDate(task)!, locale)}</span>
+                <span className="calendar__time">{formatTime(taskTime(task)!, locale)}</span>
                 {editingId === task.id ? (
                   <input
                     className="calendar__edit"
@@ -219,6 +225,17 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
               />
             </svg>
           </button>
+          <button
+            className={`calendar__prio ${newHasTime ? "calendar__prio--time" : ""}`}
+            title={t("calendar.set_time")}
+            aria-pressed={newHasTime}
+            onClick={() => setNewHasTime((v) => !v)}
+          >
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.3" />
+              <path d="M8 4.6V8l2.2 1.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           <input
             className="calendar__input"
             value={newText}
@@ -231,7 +248,7 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
           </button>
         </div>
 
-        {newPriority && (
+        {newHasTime && (
           <div className="calendar__time-row">
             <span className="type-field__label">{t("calendar.time")}</span>
             <input

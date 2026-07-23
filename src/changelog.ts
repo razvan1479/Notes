@@ -30,6 +30,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.6.7",
+    date: "2026-07-23",
+    changes: [
+      {
+        type: "fix",
+        ro: "În calendar, ora afișată la task-urile cu memento era mereu 12:00 AM, nu ora aleasă.",
+        en: "In the calendar, the time shown for tasks with a reminder was always 12:00 AM instead of the chosen time.",
+      },
+      {
+        type: "fix",
+        ro: "Rearanjarea task-urilor prin tragere putea ascunde task-urile programate pentru zilele următoare.",
+        en: "Reordering tasks by dragging could hide tasks scheduled for upcoming days.",
+      },
+      {
+        type: "improved",
+        ro: "În calendar, ora este acum opțională și separată de „!”: poți marca un task ca prioritar fără să fii obligat să alegi o oră.",
+        en: "In the calendar, the time is now optional and separate from “!”: you can mark a task as priority without having to pick a time.",
+      },
+    ],
+  },
+  {
     version: "6.6.6",
     date: "2026-07-23",
     changes: [

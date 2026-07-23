@@ -166,11 +166,18 @@ export function useTasks(onBonus?: (count: number) => void) {
   const reorderActive = useCallback(async (orderedActiveIds: number[]) => {
     const prev = tasksRef.current;
     const byId = new Map(prev.map((t) => [t.id, t]));
+    const inList = new Set(orderedActiveIds);
     const reordered = orderedActiveIds
       .map((id) => byId.get(id))
       .filter((t): t is Task => Boolean(t));
+    // Task-uri active care NU erau in lista trasa (ex. programate in viitor,
+    // deci ascunse din lista principala). Trebuie pastrate, altfel dispar.
+    const untouched = prev.filter((t) => !t.completed && !inList.has(t.id));
     const completed = prev.filter((t) => t.completed);
-    const merged = [...reordered, ...completed].map((t, i) => ({ ...t, position: i }));
+    const merged = [...reordered, ...untouched, ...completed].map((t, i) => ({
+      ...t,
+      position: i,
+    }));
     setTasks(merged);
     await persistOrder(merged.map((t) => t.id));
   }, []);
