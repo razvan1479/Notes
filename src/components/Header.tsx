@@ -100,7 +100,7 @@ export function Header({
           title={t("header.changelog")}
         >
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <g transform="rotate(-28 12 12)">
+            <g transform="rotate(-29 12 12)">
               <g transform="translate(12 12) scale(0.92) translate(-12 -12)">
                 <path
                   d="M3.5 10.4v3.2a1 1 0 0 0 .75.97L20 18.5v-13L4.25 9.43a1 1 0 0 0-.75.97z"
