@@ -30,7 +30,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "6.5.7",
+    version: "6.6.1",
+    date: "2026-07-23",
+    changes: [
+      {
+        type: "fix",
+        ro: "Numărul versiunii afișat în istoric nu se potrivea cu versiunea instalată.",
+        en: "The version number shown in the history did not match the installed version.",
+      },
+    ],
+  },
+  {
+    version: "6.6.0",
     date: "2026-07-23",
     changes: [
       {
