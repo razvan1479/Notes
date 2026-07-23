@@ -279,8 +279,6 @@ export default function App() {
           onClose={() => setSettingsOpen(false)}
           colors={colors}
           onReset={handleReset}
-          changelogUnread={changelog.unreadCount}
-          onOpenChangelog={openChangelog}
         />
       )}
 

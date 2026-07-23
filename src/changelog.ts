@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.6.5",
+    date: "2026-07-23",
+    changes: [
+      {
+        type: "improved",
+        ro: "Noutățile se deschid doar din butonul de sus; rândul din Setări a fost scos.",
+        en: "News opens only from the top button; the Settings row was removed.",
+      },
+    ],
+  },
+  {
     version: "6.6.4",
     date: "2026-07-23",
     changes: [
