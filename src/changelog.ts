@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.6.6",
+    date: "2026-07-23",
+    changes: [
+      {
+        type: "fix",
+        ro: "După o actualizare, butonul de noutăți arată acum doar versiunile noi, nu tot istoricul.",
+        en: "After an update, the news button now shows only the new versions, not the whole history.",
+      },
+    ],
+  },
+  {
     version: "6.6.5",
     date: "2026-07-23",
     changes: [
