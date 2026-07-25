@@ -11,6 +11,7 @@ import { UpdatePopup } from "./components/UpdatePopup";
 import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
 import { ReminderAlert } from "./components/ReminderAlert";
+import { StatsModal } from "./components/StatsModal";
 import { ChangelogModal } from "./components/ChangelogModal";
 import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
@@ -37,7 +38,7 @@ function norm(s: string): string {
 export default function App() {
   const bonusRef = useRef<(count: number) => void>(() => {});
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
-  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
+  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, addSubtask, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const update = useUpdate();
   const colors = useColors(theme);
@@ -104,6 +105,7 @@ export default function App() {
   // Istoricul se deschide DOAR de la iconita din bara de sus.
   // Daca exista versiuni necitite, se arata intai "ce e nou" (mod "new");
   // dupa "Am inteles" trecem la istoricul complet (mod "all").
+  const [statsOpen, setStatsOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [changelogMode, setChangelogMode] = useState<"new" | "all">("all");
   const [newsEntries, setNewsEntries] = useState<typeof changelog.unread>([]);
@@ -222,6 +224,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
         onOpenCalendar={() => setCalendarOpen(true)}
         changelogDot={changelog.unreadCount > 0}
+onOpenStats={() => setStatsOpen(true)}
         onOpenChangelog={openChangelog}
         onCheckUpdate={() => {
           setUpdateForced(false);
@@ -263,6 +266,12 @@ export default function App() {
           onDelete={remove}
           onTogglePriority={togglePriority}
           onOpenReminder={(id) => setReminderTaskId(id)}
+          onAddSubtask={addSubtask}
+          onToggleSubtask={toggleSubtask}
+          onEditSubtask={editSubtask}
+          onDeleteSubtask={removeSubtask}
+          onSetNote={setNote}
+          onSetRecurrence={setRecurrence}
           onReorderActive={reorderActive}
         />
       )}
@@ -289,6 +298,10 @@ export default function App() {
 
       {calendarOpen && (
         <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onEdit={editText} onDelete={remove} onClose={() => setCalendarOpen(false)} />
+      )}
+
+      {statsOpen && (
+        <StatsModal level={game.level} onClose={() => setStatsOpen(false)} />
       )}
 
       {changelogOpen && (

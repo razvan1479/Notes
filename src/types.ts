@@ -16,6 +16,22 @@ export interface Task {
   reminderAt: number | null;
   /** Data programata pentru calendar (fara alarma), sau null. */
   scheduledAt: number | null;
+  /** Nota libera (detalii, linkuri), sau null. */
+  note: string | null;
+  /** Recurenta: "daily" | "weekly" | "monthly", sau null daca nu se repeta. */
+  recurrence: Recurrence | null;
+  /** Sub-task-urile (pasii). Se incarca odata cu task-ul. */
+  subtasks: Subtask[];
+}
+
+export type Recurrence = "daily" | "weekly" | "monthly";
+
+export interface Subtask {
+  id: number;
+  taskId: number;
+  text: string;
+  done: boolean;
+  position: number;
 }
 
 /** Forma bruta a randului din SQLite (numere in loc de boolean). */
@@ -29,6 +45,16 @@ export interface TaskRow {
   priority: number;
   reminder_at: number | null;
   scheduled_at: number | null;
+  note: string | null;
+  recurrence: string | null;
+}
+
+export interface SubtaskRow {
+  id: number;
+  task_id: number;
+  text: string;
+  done: number;
+  position: number;
 }
 
 export type ThemeMode = "light" | "dark";

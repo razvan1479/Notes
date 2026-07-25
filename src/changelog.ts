@@ -30,6 +30,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.0",
+    date: "2026-07-25",
+    changes: [
+      {
+        type: "new",
+        ro: "Sub-task-uri: fiecare task poate avea pași bifabili, cu progres (ex. 2/4). Deschide-le din butonul de detalii.",
+        en: "Sub-tasks: each task can have checkable steps, with progress (e.g. 2/4). Open them from the details button.",
+      },
+      {
+        type: "new",
+        ro: "Task-uri recurente: le poți seta să se repete zilnic, săptămânal sau lunar. La bifare apare automat următoarea apariție.",
+        en: "Recurring tasks: set them to repeat daily, weekly or monthly. When you check one, the next occurrence appears automatically.",
+      },
+      {
+        type: "new",
+        ro: "Note pe task: un câmp de detalii (linkuri, context) sub fiecare task.",
+        en: "Task notes: a details field (links, context) under each task.",
+      },
+      {
+        type: "new",
+        ro: "Ecran de statistici: task-uri terminate azi și pe săptămână, seria de zile la rând, nivelul curent și un grafic pe ultimele 7 zile.",
+        en: "Statistics screen: tasks completed today and this week, your day streak, current level, and a chart of the last 7 days.",
+      },
+    ],
+  },
+  {
     version: "6.6.7",
     date: "2026-07-23",
     changes: [

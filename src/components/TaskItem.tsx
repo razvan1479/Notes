@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n/i18n";
-import type { Task } from "../types";
+import type { Task, Recurrence } from "../types";
 import {
   AUTO_DELETE_MS,
   WARNING_MS,
@@ -22,6 +22,12 @@ interface Props {
   onDelete: (id: number) => void;
   onTogglePriority: (id: number) => void;
   onOpenReminder: (id: number) => void;
+  onAddSubtask: (taskId: number, text: string) => void;
+  onToggleSubtask: (taskId: number, subId: number) => void;
+  onEditSubtask: (taskId: number, subId: number, text: string) => void;
+  onDeleteSubtask: (taskId: number, subId: number) => void;
+  onSetNote: (id: number, note: string | null) => void;
+  onSetRecurrence: (id: number, rec: Recurrence | null) => void;
   // Drag & drop (doar pentru task-urile active).
   draggable?: boolean;
   onDragStart?: (id: number) => void;
@@ -70,7 +76,17 @@ export function TaskItem(props: Props) {
   const { task, now, selected } = props;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.text);
+  const [expanded, setExpanded] = useState(false);
+  const [subDraft, setSubDraft] = useState("");
+  const [noteDraft, setNoteDraft] = useState(task.note ?? "");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setNoteDraft(task.note ?? "");
+  }, [task.note]);
+
+  const doneSubs = task.subtasks.filter((s) => s.done).length;
+  const totalSubs = task.subtasks.length;
 
   // Cand intram in editare, focalizam si selectam textul.
   useEffect(() => {
@@ -112,9 +128,7 @@ export function TaskItem(props: Props) {
         .filter(Boolean)
         .join(" ")}
       draggable={props.draggable && !editing}
-      onClick={() => props.onSelect(task.id)}
       onDragStart={(e) => {
-        // Necesar ca drag-ul sa porneasca fiabil in WebView/Chromium.
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", String(task.id));
         props.onDragStart?.(task.id);
@@ -130,6 +144,7 @@ export function TaskItem(props: Props) {
       }}
       onDragEnd={() => props.onDragEnd?.()}
     >
+      <div className="task__row" onClick={() => props.onSelect(task.id)}>
       <button
         className="task__check"
         role="checkbox"
@@ -214,11 +229,45 @@ export function TaskItem(props: Props) {
               </span>
             </>
           )}
+          {task.recurrence && (
+            <>
+              <span className="task__meta-sep">·</span>
+              <span className="task__recur" title={t("recur." + task.recurrence)}>
+                <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+                  <path d="M13 8a5 5 0 1 1-1.5-3.5M13 2v3h-3" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {t("recur." + task.recurrence)}
+              </span>
+            </>
+          )}
+          {totalSubs > 0 && (
+            <>
+              <span className="task__meta-sep">·</span>
+              <span className="task__subcount">{doneSubs}/{totalSubs}</span>
+            </>
+          )}
         </div>
       </div>
 
       {task.completed && task.completedAt != null && (
         <ExpiryIndicator completedAt={task.completedAt} now={now} />
+      )}
+
+      {!task.completed && (
+        <button
+          className={`task__prio-btn ${expanded ? "task__prio-btn--on" : ""}`}
+          aria-label={t("task.details")}
+          title={t("task.details")}
+          aria-expanded={expanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h7" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </button>
       )}
 
       {!task.completed && (
@@ -289,6 +338,84 @@ export function TaskItem(props: Props) {
           />
         </svg>
       </button>
+      </div>
+
+      {expanded && !task.completed && (
+        <div className="task__expand" onClick={(e) => e.stopPropagation()}>
+          <div className="sub-list">
+            {task.subtasks.map((s) => (
+              <div key={s.id} className="sub">
+                <button
+                  className={`sub__box ${s.done ? "sub__box--done" : ""}`}
+                  aria-checked={s.done}
+                  role="checkbox"
+                  onClick={() => props.onToggleSubtask(task.id, s.id)}
+                >
+                  {s.done && (
+                    <svg viewBox="0 0 16 16" width="9" height="9" aria-hidden="true">
+                      <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+                <input
+                  className={`sub__text ${s.done ? "sub__text--done" : ""}`}
+                  value={s.text}
+                  onChange={(e) => props.onEditSubtask(task.id, s.id, e.target.value)}
+                />
+                <button
+                  className="sub__del"
+                  aria-label={t("task.delete")}
+                  onClick={() => props.onDeleteSubtask(task.id, s.id)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <div className="sub sub--add">
+              <span className="sub__plus">+</span>
+              <input
+                className="sub__text"
+                placeholder={t("subtask.add")}
+                value={subDraft}
+                onChange={(e) => setSubDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && subDraft.trim()) {
+                    props.onAddSubtask(task.id, subDraft.trim());
+                    setSubDraft("");
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="task__ctrls">
+            <label className="task__ctrl">
+              <span>{t("recur.label")}</span>
+              <select
+                value={task.recurrence ?? ""}
+                onChange={(e) =>
+                  props.onSetRecurrence(task.id, (e.target.value || null) as Recurrence | null)
+                }
+              >
+                <option value="">{t("recur.none")}</option>
+                <option value="daily">{t("recur.daily")}</option>
+                <option value="weekly">{t("recur.weekly")}</option>
+                <option value="monthly">{t("recur.monthly")}</option>
+              </select>
+            </label>
+          </div>
+
+          <textarea
+            className="task__note"
+            placeholder={t("note.placeholder")}
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            onBlur={() => {
+              if ((task.note ?? "") !== noteDraft) props.onSetNote(task.id, noteDraft || null);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

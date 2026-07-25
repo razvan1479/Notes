@@ -2,7 +2,7 @@
 // task-urile bifate apar dedesubt, sub un separator.
 
 import { useMemo, useState } from "react";
-import type { Task } from "../types";
+import type { Task, Recurrence } from "../types";
 import { TaskItem } from "./TaskItem";
 import { useI18n } from "../i18n/i18n";
 
@@ -17,6 +17,12 @@ interface Props {
   onDelete: (id: number) => void;
   onTogglePriority: (id: number) => void;
   onOpenReminder: (id: number) => void;
+  onAddSubtask: (taskId: number, text: string) => void;
+  onToggleSubtask: (taskId: number, subId: number) => void;
+  onEditSubtask: (taskId: number, subId: number, text: string) => void;
+  onDeleteSubtask: (taskId: number, subId: number) => void;
+  onSetNote: (id: number, note: string | null) => void;
+  onSetRecurrence: (id: number, rec: Recurrence | null) => void;
   onReorderActive: (orderedActiveIds: number[]) => void;
 }
 
@@ -58,6 +64,12 @@ export function TaskList(props: Props) {
       onDelete={props.onDelete}
       onTogglePriority={props.onTogglePriority}
       onOpenReminder={props.onOpenReminder}
+      onAddSubtask={props.onAddSubtask}
+      onToggleSubtask={props.onToggleSubtask}
+      onEditSubtask={props.onEditSubtask}
+      onDeleteSubtask={props.onDeleteSubtask}
+      onSetNote={props.onSetNote}
+      onSetRecurrence={props.onSetRecurrence}
       draggable={allowDrag}
       onDragStart={setDragId}
       onDragOver={setOverId}

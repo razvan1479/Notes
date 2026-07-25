@@ -12,6 +12,7 @@ interface Props {
   onToggleTheme: () => void;
   onOpenCalendar: () => void;
   changelogDot: boolean;
+  onOpenStats: () => void;
   onOpenChangelog: () => void;
   onCheckUpdate: () => void;
   onOpenSettings: () => void;
@@ -25,6 +26,7 @@ export function Header({
   onToggleTheme,
   onOpenCalendar,
   changelogDot,
+  onOpenStats,
   onOpenChangelog,
   onCheckUpdate,
   onOpenSettings,
@@ -90,6 +92,20 @@ export function Header({
             <line x1="2.5" y1="8" x2="17.5" y2="8" stroke="currentColor" strokeWidth="2" />
             <line x1="6.5" y1="2.5" x2="6.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             <line x1="13.5" y1="2.5" x2="13.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        <button
+          className="icon-btn"
+          onClick={onOpenStats}
+          aria-label={t("header.stats")}
+          title={t("header.stats")}
+        >
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+            <line x1="3" y1="17" x2="17" y2="17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <rect x="4" y="10" width="2.6" height="5" rx="0.6" fill="currentColor" />
+            <rect x="8.7" y="6" width="2.6" height="9" rx="0.6" fill="currentColor" />
+            <rect x="13.4" y="12" width="2.6" height="3" rx="0.6" fill="currentColor" />
           </svg>
         </button>
 

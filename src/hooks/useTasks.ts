@@ -3,7 +3,7 @@
 // "maturarea" automata a task-urilor bifate mai vechi de 3h.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Task } from "../types";
+import type { Task, Recurrence } from "../types";
 import {
   addTask as dbAdd,
   deleteExpiredTasks,
@@ -15,12 +15,36 @@ import {
   setTaskPriority,
   setTaskReminder,
   setTaskScheduled,
+  setTaskNote,
+  setTaskRecurrence,
+  addSubtask as dbAddSubtask,
+  setSubtaskDone,
+  updateSubtaskText,
+  deleteSubtask as dbDeleteSubtask,
+  bumpDailyCompleted,
   updateTaskText,
 } from "../db/database";
 import { isExpired } from "../lib/time";
 
 /** Cat de des actualizam "now" (countdown live, din secunda in secunda). */
 const TICK_MS = 1000;
+
+
+/** Ziua locala ca YYYY-MM-DD (pentru statistici). */
+function localDay(ts: number): string {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Urmatoarea data pentru un task recurent, pornind de la data curenta. */
+function nextRecurrence(from: number, rec: Recurrence): number {
+  const d = new Date(from);
+  if (rec === "daily") d.setDate(d.getDate() + 1);
+  else if (rec === "weekly") d.setDate(d.getDate() + 7);
+  else if (rec === "monthly") d.setMonth(d.getMonth() + 1);
+  return d.getTime();
+}
 
 export function useTasks(onBonus?: (count: number) => void) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -135,6 +159,45 @@ export function useTasks(onBonus?: (count: number) => void) {
       )
     );
     await setTaskCompleted(id, nextCompleted);
+
+    if (nextCompleted) {
+      // Statistici: numaram o terminare pentru ziua de azi.
+      void bumpDailyCompleted(localDay(Date.now()));
+
+      // Recurenta: daca task-ul se repeta, cream automat urmatoarea aparitie
+      // (nebifata), programata pe data urmatoare. Cel bifat se sterge normal la 3h.
+      if (current.recurrence) {
+        const base = current.scheduledAt ?? current.reminderAt ?? Date.now();
+        const nextAt = nextRecurrence(base, current.recurrence);
+        const hadReminder = current.reminderAt != null;
+        const clone = await dbAdd(current.text);
+        await setTaskRecurrence(clone.id, current.recurrence);
+        if (current.priority) await setTaskPriority(clone.id, true);
+        if (current.note) await setTaskNote(clone.id, current.note);
+        let scheduledAt: number | null = null;
+        let reminderAt: number | null = null;
+        if (hadReminder) {
+          reminderAt = nextAt;
+          const d = new Date(nextAt);
+          scheduledAt = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+          await setTaskReminder(clone.id, reminderAt);
+          await setTaskScheduled(clone.id, scheduledAt);
+        } else {
+          const d = new Date(nextAt);
+          scheduledAt = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+          await setTaskScheduled(clone.id, scheduledAt);
+        }
+        const newTask: Task = {
+          ...clone,
+          priority: current.priority,
+          note: current.note,
+          recurrence: current.recurrence,
+          reminderAt,
+          scheduledAt,
+        };
+        setTasks((prev) => [...prev, newTask]);
+      }
+    }
   }, []);
 
   const togglePriority = useCallback(async (id: number) => {
@@ -149,6 +212,60 @@ export function useTasks(onBonus?: (count: number) => void) {
   const setReminder = useCallback(async (id: number, reminderAt: number | null) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, reminderAt } : t)));
     await setTaskReminder(id, reminderAt);
+  }, []);
+
+  const setNote = useCallback(async (id: number, note: string | null) => {
+    const clean = note && note.trim() ? note : null;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, note: clean } : t)));
+    await setTaskNote(id, clean);
+  }, []);
+
+  const setRecurrence = useCallback(async (id: number, recurrence: Recurrence | null) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, recurrence } : t)));
+    await setTaskRecurrence(id, recurrence);
+  }, []);
+
+  const addSubtask = useCallback(async (taskId: number, text: string) => {
+    if (!text.trim()) return;
+    const sub = await dbAddSubtask(taskId, text);
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, subtasks: [...t.subtasks, sub] } : t))
+    );
+  }, []);
+
+  const toggleSubtask = useCallback(async (taskId: number, subId: number) => {
+    const task = tasksRef.current.find((t) => t.id === taskId);
+    const sub = task?.subtasks.find((s) => s.id === subId);
+    if (!sub) return;
+    const done = !sub.done;
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, subtasks: t.subtasks.map((s) => (s.id === subId ? { ...s, done } : s)) }
+          : t
+      )
+    );
+    await setSubtaskDone(subId, done);
+  }, []);
+
+  const editSubtask = useCallback(async (taskId: number, subId: number, text: string) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, subtasks: t.subtasks.map((s) => (s.id === subId ? { ...s, text } : s)) }
+          : t
+      )
+    );
+    await updateSubtaskText(subId, text);
+  }, []);
+
+  const removeSubtask = useCallback(async (taskId: number, subId: number) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, subtasks: t.subtasks.filter((s) => s.id !== subId) } : t
+      )
+    );
+    await dbDeleteSubtask(subId);
   }, []);
 
   const remove = useCallback(async (id: number) => {
@@ -194,6 +311,12 @@ export function useTasks(onBonus?: (count: number) => void) {
     remove,
     togglePriority,
     setReminder,
+    setNote,
+    setRecurrence,
+    addSubtask,
+    toggleSubtask,
+    editSubtask,
+    removeSubtask,
     resetAll,
     reorderActive,
     tasksRef,

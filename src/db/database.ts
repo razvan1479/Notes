@@ -4,7 +4,7 @@
 // persista peste inchiderea aplicatiei, restart sau oprirea calculatorului.
 
 import Database from "@tauri-apps/plugin-sql";
-import type { Task, TaskRow } from "../types";
+import type { Task, TaskRow, Subtask, SubtaskRow, Recurrence } from "../types";
 import { AUTO_DELETE_MS } from "../lib/time";
 
 const DB_URL = "sqlite:quicktasks.db";
@@ -27,7 +27,20 @@ async function getDb(): Promise<Database> {
           priority     INTEGER NOT NULL DEFAULT 0,
           reminder_at  INTEGER,
           unchecked_once INTEGER NOT NULL DEFAULT 0,
-          scheduled_at INTEGER
+          scheduled_at INTEGER,
+          note         TEXT,
+          recurrence   TEXT
+        );
+        CREATE TABLE IF NOT EXISTS subtasks (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          task_id    INTEGER NOT NULL,
+          text       TEXT    NOT NULL DEFAULT '',
+          done       INTEGER NOT NULL DEFAULT 0,
+          position   INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS stats_daily (
+          day        TEXT    PRIMARY KEY,
+          completed  INTEGER NOT NULL DEFAULT 0
         );
       `);
       // Migrari pentru bazele create inainte de coloanele noi.
@@ -56,6 +69,36 @@ async function getDb(): Promise<Database> {
       } catch {
         /* coloana exista deja */
       }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN note TEXT;`);
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN recurrence TEXT;`);
+      } catch {
+        /* coloana exista deja */
+      }
+      // Tabele noi (sub-task-uri si statistici) — sigure daca deja exista.
+      try {
+        await db.execute(
+          `CREATE TABLE IF NOT EXISTS subtasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER NOT NULL,
+            text TEXT NOT NULL DEFAULT '',
+            done INTEGER NOT NULL DEFAULT 0,
+            position INTEGER NOT NULL DEFAULT 0
+          );`
+        );
+        await db.execute(
+          `CREATE TABLE IF NOT EXISTS stats_daily (
+            day TEXT PRIMARY KEY,
+            completed INTEGER NOT NULL DEFAULT 0
+          );`
+        );
+      } catch {
+        /* deja exista */
+      }
       // Index pentru sortare rapida chiar si cu multe task-uri.
       await db.execute(
         `CREATE INDEX IF NOT EXISTS idx_tasks_position ON tasks(position);`
@@ -82,6 +125,9 @@ function rowToTask(r: TaskRow): Task {
     priority: Number(r.priority) === 1,
     reminderAt: r.reminder_at == null ? null : Number(r.reminder_at),
     scheduledAt: r.scheduled_at == null ? null : Number(r.scheduled_at),
+    note: r.note ?? null,
+    recurrence: (r.recurrence as Recurrence | null) ?? null,
+    subtasks: [],
   };
 }
 
@@ -91,7 +137,25 @@ export async function getAllTasks(): Promise<Task[]> {
   const rows = await db.select<TaskRow[]>(
     `SELECT * FROM tasks ORDER BY position ASC, id ASC;`
   );
-  return rows.map(rowToTask);
+  const tasks = rows.map(rowToTask);
+  const subs = await db.select<SubtaskRow[]>(
+    `SELECT * FROM subtasks ORDER BY position ASC, id ASC;`
+  );
+  const byTask = new Map<number, Subtask[]>();
+  for (const r of subs) {
+    const st: Subtask = {
+      id: Number(r.id),
+      taskId: Number(r.task_id),
+      text: r.text ?? "",
+      done: Number(r.done) === 1,
+      position: Number(r.position),
+    };
+    const arr = byTask.get(st.taskId) ?? [];
+    arr.push(st);
+    byTask.set(st.taskId, arr);
+  }
+  for (const t of tasks) t.subtasks = byTask.get(t.id) ?? [];
+  return tasks;
 }
 
 /** Adauga un task nou la finalul listei si returneaza obiectul creat. */
@@ -118,6 +182,9 @@ export async function addTask(text: string): Promise<Task> {
     priority: false,
     reminderAt: null,
     scheduledAt: null,
+    note: null,
+    recurrence: null,
+    subtasks: [],
   };
 }
 
@@ -174,12 +241,14 @@ export async function setTaskPriority(id: number, priority: boolean): Promise<vo
 /** Sterge TOATE task-urile (folosit de resetarea totala). */
 export async function deleteAllTasks(): Promise<void> {
   const db = await getDb();
+  await db.execute(`DELETE FROM subtasks;`);
   await db.execute(`DELETE FROM tasks;`);
 }
 
 /** Sterge definitiv un task. */
 export async function deleteTask(id: number): Promise<void> {
   const db = await getDb();
+  await deleteSubtasksForTask(id);
   await db.execute(`DELETE FROM tasks WHERE id = $1;`, [id]);
 }
 
@@ -205,6 +274,12 @@ export async function deleteExpiredTasks(now: number = Date.now()): Promise<numb
   );
   const bonusCount = rows.length ? Number(rows[0].n) : 0;
   await db.execute(
+    `DELETE FROM subtasks WHERE task_id IN (
+       SELECT id FROM tasks WHERE completed = 1 AND completed_at IS NOT NULL AND completed_at <= $1
+     );`,
+    [cutoff]
+  );
+  await db.execute(
     `DELETE FROM tasks WHERE completed = 1 AND completed_at IS NOT NULL AND completed_at <= $1;`,
     [cutoff]
   );
@@ -225,4 +300,87 @@ export async function persistOrder(orderedIds: number[]): Promise<void> {
     await db.execute("ROLLBACK;");
     throw e;
   }
+}
+
+// ---------- Note & recurenta ----------
+
+export async function setTaskNote(id: number, note: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET note = $1 WHERE id = $2;`, [note && note.trim() ? note : null, id]);
+}
+
+export async function setTaskRecurrence(id: number, recurrence: Recurrence | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET recurrence = $1 WHERE id = $2;`, [recurrence, id]);
+}
+
+// ---------- Sub-task-uri ----------
+
+export async function addSubtask(taskId: number, text: string): Promise<Subtask> {
+  const db = await getDb();
+  const rows = await db.select<{ maxPos: number | null }[]>(
+    `SELECT MAX(position) AS maxPos FROM subtasks WHERE task_id = $1;`,
+    [taskId]
+  );
+  const nextPos = (rows[0]?.maxPos == null ? -1 : Number(rows[0].maxPos)) + 1;
+  const res = await db.execute(
+    `INSERT INTO subtasks (task_id, text, done, position) VALUES ($1, $2, 0, $3);`,
+    [taskId, text.trim(), nextPos]
+  );
+  return {
+    id: Number(res.lastInsertId),
+    taskId,
+    text: text.trim(),
+    done: false,
+    position: nextPos,
+  };
+}
+
+export async function setSubtaskDone(id: number, done: boolean): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE subtasks SET done = $1 WHERE id = $2;`, [done ? 1 : 0, id]);
+}
+
+export async function updateSubtaskText(id: number, text: string): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE subtasks SET text = $1 WHERE id = $2;`, [text.trim(), id]);
+}
+
+export async function deleteSubtask(id: number): Promise<void> {
+  const db = await getDb();
+  await db.execute(`DELETE FROM subtasks WHERE id = $1;`, [id]);
+}
+
+async function deleteSubtasksForTask(taskId: number): Promise<void> {
+  const db = await getDb();
+  await db.execute(`DELETE FROM subtasks WHERE task_id = $1;`, [taskId]);
+}
+
+// ---------- Statistici ----------
+
+/** Incrementeaza contorul de task-uri terminate pentru ziua data (YYYY-MM-DD). */
+export async function bumpDailyCompleted(day: string): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO stats_daily (day, completed) VALUES ($1, 1)
+     ON CONFLICT(day) DO UPDATE SET completed = completed + 1;`,
+    [day]
+  );
+}
+
+export interface DailyStat {
+  day: string;
+  completed: number;
+}
+
+/** Statistici pe ultimele N zile (inclusiv azi), ordonate crescator dupa data. */
+export async function getDailyStats(days: number): Promise<DailyStat[]> {
+  const db = await getDb();
+  const rows = await db.select<{ day: string; completed: number }[]>(
+    `SELECT day, completed FROM stats_daily ORDER BY day DESC LIMIT $1;`,
+    [days]
+  );
+  return rows
+    .map((r) => ({ day: r.day, completed: Number(r.completed) }))
+    .sort((a, b) => a.day.localeCompare(b.day));
 }
