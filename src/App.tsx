@@ -93,9 +93,10 @@ export default function App() {
       reminderAt: number | null,
       recurrence: Recurrence | null
     ) => {
-      // Cu ora aleasa -> memento (alarma) la acea ora, dar task-ul ramane ascuns
-      // din lista pana in ziua lui. Fara ora -> doar programat pe zi, la 00:00.
-      if (reminderAt != null) addWithReminder(text, reminderAt, priority, dayStart, recurrence);
+      // Cu ora aleasa -> task-ul APARE in lista principala exact la acea ora
+      // (scheduledAt = ziua + ora) si tot atunci suna mementoul.
+      // Fara ora -> apare la inceputul zilei alese (00:00).
+      if (reminderAt != null) addWithReminder(text, reminderAt, priority, reminderAt, recurrence);
       else addScheduled(text, dayStart, priority, recurrence);
     },
     [addWithReminder, addScheduled]

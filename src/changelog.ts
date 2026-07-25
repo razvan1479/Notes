@@ -30,6 +30,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.2",
+    date: "2026-07-25",
+    changes: [
+      {
+        type: "improved",
+        ro: "În calendar, ora aleasă stabilește acum când apare task-ul în lista principală (nu doar când sună mementoul). Un task pentru azi peste 30 de minute apare abia atunci, nu imediat.",
+        en: "In the calendar, the chosen time now sets when the task appears in the main list (not just when the reminder rings). A task for today in 30 minutes shows up only then, not immediately.",
+      },
+      {
+        type: "improved",
+        ro: "Nota se afișează acum ca un bloc cu bară albastră și linkuri clickabile; dai click pe ea ca s-o editezi și Enter ca s-o salvezi.",
+        en: "The note now shows as a block with a blue bar and clickable links; click it to edit and press Enter to save.",
+      },
+    ],
+  },
+  {
     version: "6.7.1",
     date: "2026-07-25",
     changes: [

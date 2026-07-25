@@ -38,6 +38,26 @@ interface Props {
   isDragOver?: boolean;
 }
 
+/** Transforma URL-urile din text in linkuri clickabile; restul ramane text. */
+function renderNoteWithLinks(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 /** Inel circular care arata cat din cele 3h a trecut, plus timpul ramas. */
 function ExpiryIndicator({ completedAt, now }: { completedAt: number; now: number }) {
   const { t } = useI18n();
@@ -79,11 +99,26 @@ export function TaskItem(props: Props) {
   const [expanded, setExpanded] = useState(false);
   const [subDraft, setSubDraft] = useState("");
   const [noteDraft, setNoteDraft] = useState(task.note ?? "");
+  const [editingNote, setEditingNote] = useState(false);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setNoteDraft(task.note ?? "");
-  }, [task.note]);
+    if (!editingNote) setNoteDraft(task.note ?? "");
+  }, [task.note, editingNote]);
+
+  useEffect(() => {
+    if (editingNote) {
+      noteRef.current?.focus();
+      const v = noteRef.current?.value ?? "";
+      noteRef.current?.setSelectionRange(v.length, v.length);
+    }
+  }, [editingNote]);
+
+  // Cand panoul se inchide, iesim si din editarea notei.
+  useEffect(() => {
+    if (!expanded) setEditingNote(false);
+  }, [expanded]);
 
   // Daca task-ul nu mai e selectat (s-a dat click pe altul), inchidem panoul.
   useEffect(() => {
@@ -113,6 +148,12 @@ export function TaskItem(props: Props) {
     } else {
       setDraft(task.text);
     }
+  };
+
+  const commitNote = () => {
+    setEditingNote(false);
+    const clean = noteDraft.trim() ? noteDraft : null;
+    if ((task.note ?? "") !== (clean ?? "")) props.onSetNote(task.id, clean);
   };
 
   const cancel = () => {
@@ -394,15 +435,39 @@ export function TaskItem(props: Props) {
             </div>
           </div>
 
-          <textarea
-            className="task__note"
-            placeholder={t("note.placeholder")}
-            value={noteDraft}
-            onChange={(e) => setNoteDraft(e.target.value)}
-            onBlur={() => {
-              if ((task.note ?? "") !== noteDraft) props.onSetNote(task.id, noteDraft || null);
-            }}
-          />
+          {editingNote ? (
+            <textarea
+              ref={noteRef}
+              className="task__note"
+              placeholder={t("note.placeholder")}
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter salveaza si inchide; Shift+Enter face rand nou.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  commitNote();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  setNoteDraft(task.note ?? "");
+                  setEditingNote(false);
+                }
+              }}
+              onBlur={commitNote}
+            />
+          ) : task.note ? (
+            <div
+              className="task__note-view"
+              title={t("note.edit_hint")}
+              onClick={() => setEditingNote(true)}
+            >
+              {renderNoteWithLinks(task.note)}
+            </div>
+          ) : (
+            <button className="task__note-add" onClick={() => setEditingNote(true)}>
+              {t("note.add")}
+            </button>
+          )}
         </div>
       )}
     </div>

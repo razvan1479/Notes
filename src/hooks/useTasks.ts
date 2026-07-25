@@ -217,12 +217,13 @@ export function useTasks(onBonus?: (count: number) => void) {
         let scheduledAt: number | null = null;
         let reminderAt: number | null = null;
         if (hadReminder) {
+          // Cu ora: urmatoarea aparitie APARE in lista si suna exact la acea ora.
           reminderAt = nextAt;
-          const d = new Date(nextAt);
-          scheduledAt = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+          scheduledAt = nextAt;
           await setTaskReminder(clone.id, reminderAt);
           await setTaskScheduled(clone.id, scheduledAt);
         } else {
+          // Fara ora: apare la inceputul zilei urmatoare programate (00:00).
           const d = new Date(nextAt);
           scheduledAt = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
           await setTaskScheduled(clone.id, scheduledAt);

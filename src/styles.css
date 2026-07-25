@@ -1786,3 +1786,20 @@ body {
   border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2);
   color: var(--text); font-family: inherit; font-size: 13px; padding: 5px 9px; cursor: pointer;
 }
+
+/* Notă — afișare cu bara albastră (stil citat), editabilă la click */
+.task__note-view {
+  font-size: 13px; color: var(--text-muted); line-height: 1.45;
+  background: var(--surface-2); border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  padding: 9px 11px; cursor: text; white-space: pre-wrap; word-break: break-word;
+}
+.task__note-view:hover { background: var(--accent-soft); }
+.task__note-view a { color: var(--accent); }
+.task__note-add {
+  align-self: flex-start;
+  border: none; background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+  padding: 4px 6px; border-radius: 7px;
+}
+.task__note-add:hover { background: var(--surface-2); color: var(--text); }
