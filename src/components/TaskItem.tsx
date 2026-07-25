@@ -85,6 +85,11 @@ export function TaskItem(props: Props) {
     setNoteDraft(task.note ?? "");
   }, [task.note]);
 
+  // Daca task-ul nu mai e selectat (s-a dat click pe altul), inchidem panoul.
+  useEffect(() => {
+    if (!selected) setExpanded(false);
+  }, [selected]);
+
   const doneSubs = task.subtasks.filter((s) => s.done).length;
   const totalSubs = task.subtasks.length;
 
@@ -261,6 +266,7 @@ export function TaskItem(props: Props) {
           aria-expanded={expanded}
           onClick={(e) => {
             e.stopPropagation();
+            props.onSelect(task.id);
             setExpanded((v) => !v);
           }}
         >
@@ -386,23 +392,6 @@ export function TaskItem(props: Props) {
                 }}
               />
             </div>
-          </div>
-
-          <div className="task__ctrls">
-            <label className="task__ctrl">
-              <span>{t("recur.label")}</span>
-              <select
-                value={task.recurrence ?? ""}
-                onChange={(e) =>
-                  props.onSetRecurrence(task.id, (e.target.value || null) as Recurrence | null)
-                }
-              >
-                <option value="">{t("recur.none")}</option>
-                <option value="daily">{t("recur.daily")}</option>
-                <option value="weekly">{t("recur.weekly")}</option>
-                <option value="monthly">{t("recur.monthly")}</option>
-              </select>
-            </label>
           </div>
 
           <textarea

@@ -22,7 +22,7 @@ import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
 import { useReminders } from "./hooks/useReminders";
 import { playReminderSound } from "./lib/sound";
-import type { Task } from "./types";
+import type { Task, Recurrence } from "./types";
 import { useGamification } from "./hooks/useGamification";
 import { useChangelog } from "./hooks/useChangelog";
 import { useI18n } from "./i18n/i18n";
@@ -86,11 +86,17 @@ export default function App() {
   // Adaugare din calendar: cu "!" -> memento (alarma+pop-up) la ora exacta si prioritar;
   // fara "!" -> doar programat pe zi la 00:00, fara alarma.
   const handleCalendarAdd = useCallback(
-    (text: string, dayStart: number, priority: boolean, reminderAt: number | null) => {
+    (
+      text: string,
+      dayStart: number,
+      priority: boolean,
+      reminderAt: number | null,
+      recurrence: Recurrence | null
+    ) => {
       // Cu ora aleasa -> memento (alarma) la acea ora, dar task-ul ramane ascuns
       // din lista pana in ziua lui. Fara ora -> doar programat pe zi, la 00:00.
-      if (reminderAt != null) addWithReminder(text, reminderAt, priority, dayStart);
-      else addScheduled(text, dayStart, priority);
+      if (reminderAt != null) addWithReminder(text, reminderAt, priority, dayStart, recurrence);
+      else addScheduled(text, dayStart, priority, recurrence);
     },
     [addWithReminder, addScheduled]
   );

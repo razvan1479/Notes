@@ -38,11 +38,27 @@ function localDay(ts: number): string {
 }
 
 /** Urmatoarea data pentru un task recurent, pornind de la data curenta. */
-function nextRecurrence(from: number, rec: Recurrence): number {
+/**
+ * Urmatoarea data pentru un task recurent.
+ * - daily / weekly: +1 zi / +7 zile.
+ * - monthly: pastreaza ziua ORIGINALA (anchorDay). Daca luna urmatoare nu are
+ *   ziua respectiva (ex. 31 in februarie), cade pe ultima zi a lunii; cand o
+ *   luna are din nou ziua originala, revine la ea (ex. 31 ian -> 28/29 feb ->
+ *   31 mar). anchorDay implicit = ziua din data `from`.
+ */
+function nextRecurrence(from: number, rec: Recurrence, anchorDay?: number): number {
   const d = new Date(from);
-  if (rec === "daily") d.setDate(d.getDate() + 1);
-  else if (rec === "weekly") d.setDate(d.getDate() + 7);
-  else if (rec === "monthly") d.setMonth(d.getMonth() + 1);
+  if (rec === "daily") {
+    d.setDate(d.getDate() + 1);
+  } else if (rec === "weekly") {
+    d.setDate(d.getDate() + 7);
+  } else if (rec === "monthly") {
+    const day = anchorDay ?? d.getDate();
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1; // luna urmatoare (0-index -> +1)
+    const lastDay = new Date(y, m + 1, 0).getDate(); // ultima zi a lunii urmatoare
+    d.setFullYear(y, m, Math.min(day, lastDay));
+  }
   return d.getTime();
 }
 
@@ -113,13 +129,23 @@ export function useTasks(onBonus?: (count: number) => void) {
   /** Adauga un task programat pe o data (pentru calendar, FARA alarma/pop-up)
       si, optional, prioritar. */
   const addScheduled = useCallback(
-    async (text: string, scheduledAt: number, priority = false) => {
+    async (
+      text: string,
+      scheduledAt: number,
+      priority = false,
+      recurrence: Recurrence | null = null
+    ) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       const task = await dbAdd(trimmed);
       await setTaskScheduled(task.id, scheduledAt);
       if (priority) await setTaskPriority(task.id, true);
-      setTasks((prev) => [...prev, { ...task, scheduledAt, priority }]);
+      const anchor = recurrence === "monthly" ? new Date(scheduledAt).getDate() : null;
+      if (recurrence) await setTaskRecurrence(task.id, recurrence, anchor);
+      setTasks((prev) => [
+        ...prev,
+        { ...task, scheduledAt, priority, recurrence, recurAnchor: anchor },
+      ]);
     },
     []
   );
@@ -128,14 +154,25 @@ export function useTasks(onBonus?: (count: number) => void) {
       prioritar (din calendar, cand pui semnul exclamarii). scheduledAt tine
       task-ul ascuns din lista principala pana ii vine ziua. */
   const addWithReminder = useCallback(
-    async (text: string, reminderAt: number, priority = false, scheduledAt: number | null = null) => {
+    async (
+      text: string,
+      reminderAt: number,
+      priority = false,
+      scheduledAt: number | null = null,
+      recurrence: Recurrence | null = null
+    ) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       const task = await dbAdd(trimmed);
       await setTaskReminder(task.id, reminderAt);
       if (scheduledAt != null) await setTaskScheduled(task.id, scheduledAt);
       if (priority) await setTaskPriority(task.id, true);
-      setTasks((prev) => [...prev, { ...task, reminderAt, scheduledAt, priority }]);
+      const anchor = recurrence === "monthly" ? new Date(reminderAt).getDate() : null;
+      if (recurrence) await setTaskRecurrence(task.id, recurrence, anchor);
+      setTasks((prev) => [
+        ...prev,
+        { ...task, reminderAt, scheduledAt, priority, recurrence, recurAnchor: anchor },
+      ]);
     },
     []
   );
@@ -168,10 +205,13 @@ export function useTasks(onBonus?: (count: number) => void) {
       // (nebifata), programata pe data urmatoare. Cel bifat se sterge normal la 3h.
       if (current.recurrence) {
         const base = current.scheduledAt ?? current.reminderAt ?? Date.now();
-        const nextAt = nextRecurrence(base, current.recurrence);
+        // Ziua-ancora pentru recurenta lunara: prima data setata, ca sa nu se
+        // "erodeze" spre 28 dupa o luna scurta. Daca lipseste, o luam din base.
+        const anchor = current.recurAnchor ?? new Date(base).getDate();
+        const nextAt = nextRecurrence(base, current.recurrence, anchor);
         const hadReminder = current.reminderAt != null;
         const clone = await dbAdd(current.text);
-        await setTaskRecurrence(clone.id, current.recurrence);
+        await setTaskRecurrence(clone.id, current.recurrence, anchor);
         if (current.priority) await setTaskPriority(clone.id, true);
         if (current.note) await setTaskNote(clone.id, current.note);
         let scheduledAt: number | null = null;
@@ -192,6 +232,7 @@ export function useTasks(onBonus?: (count: number) => void) {
           priority: current.priority,
           note: current.note,
           recurrence: current.recurrence,
+          recurAnchor: anchor,
           reminderAt,
           scheduledAt,
         };

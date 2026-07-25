@@ -29,7 +29,8 @@ async function getDb(): Promise<Database> {
           unchecked_once INTEGER NOT NULL DEFAULT 0,
           scheduled_at INTEGER,
           note         TEXT,
-          recurrence   TEXT
+          recurrence   TEXT,
+          recur_anchor INTEGER
         );
         CREATE TABLE IF NOT EXISTS subtasks (
           id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +77,11 @@ async function getDb(): Promise<Database> {
       }
       try {
         await db.execute(`ALTER TABLE tasks ADD COLUMN recurrence TEXT;`);
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN recur_anchor INTEGER;`);
       } catch {
         /* coloana exista deja */
       }
@@ -127,6 +133,7 @@ function rowToTask(r: TaskRow): Task {
     scheduledAt: r.scheduled_at == null ? null : Number(r.scheduled_at),
     note: r.note ?? null,
     recurrence: (r.recurrence as Recurrence | null) ?? null,
+    recurAnchor: r.recur_anchor == null ? null : Number(r.recur_anchor),
     subtasks: [],
   };
 }
@@ -184,6 +191,7 @@ export async function addTask(text: string): Promise<Task> {
     scheduledAt: null,
     note: null,
     recurrence: null,
+    recurAnchor: null,
     subtasks: [],
   };
 }
@@ -309,9 +317,17 @@ export async function setTaskNote(id: number, note: string | null): Promise<void
   await db.execute(`UPDATE tasks SET note = $1 WHERE id = $2;`, [note && note.trim() ? note : null, id]);
 }
 
-export async function setTaskRecurrence(id: number, recurrence: Recurrence | null): Promise<void> {
+export async function setTaskRecurrence(
+  id: number,
+  recurrence: Recurrence | null,
+  anchor: number | null = null
+): Promise<void> {
   const db = await getDb();
-  await db.execute(`UPDATE tasks SET recurrence = $1 WHERE id = $2;`, [recurrence, id]);
+  await db.execute(`UPDATE tasks SET recurrence = $1, recur_anchor = $2 WHERE id = $3;`, [
+    recurrence,
+    anchor,
+    id,
+  ]);
 }
 
 // ---------- Sub-task-uri ----------

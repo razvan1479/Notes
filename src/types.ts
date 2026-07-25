@@ -20,6 +20,8 @@ export interface Task {
   note: string | null;
   /** Recurenta: "daily" | "weekly" | "monthly", sau null daca nu se repeta. */
   recurrence: Recurrence | null;
+  /** Ziua-ancora pentru recurenta lunara (1-31), sau null. */
+  recurAnchor: number | null;
   /** Sub-task-urile (pasii). Se incarca odata cu task-ul. */
   subtasks: Subtask[];
 }
@@ -47,6 +49,7 @@ export interface TaskRow {
   scheduled_at: number | null;
   note: string | null;
   recurrence: string | null;
+  recur_anchor: number | null;
 }
 
 export interface SubtaskRow {

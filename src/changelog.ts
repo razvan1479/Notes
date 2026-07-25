@@ -30,6 +30,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.1",
+    date: "2026-07-25",
+    changes: [
+      {
+        type: "improved",
+        ro: "Recurența se setează acum din calendar, pe data pe care o alegi tu, nu din panoul de detalii.",
+        en: "Recurrence is now set from the calendar, on the date you pick, instead of from the details panel.",
+      },
+      {
+        type: "improved",
+        ro: "La recurența lunară pe 31, în lunile mai scurte cade pe ultima zi și revine la 31 când luna permite.",
+        en: "For monthly recurrence on the 31st, short months fall back to the last day and return to the 31st when the month allows.",
+      },
+      {
+        type: "improved",
+        ro: "Când dai click pe alt task, panoul de detalii deschis se închide automat.",
+        en: "When you click another task, the open details panel closes automatically.",
+      },
+    ],
+  },
+  {
     version: "6.7.0",
     date: "2026-07-25",
     changes: [

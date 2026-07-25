@@ -2,13 +2,13 @@
 // o zi, listeaza task-urile cu memento in acea zi.
 
 import { useMemo, useState } from "react";
-import type { Task } from "../types";
+import type { Task, Recurrence } from "../types";
 import { useI18n } from "../i18n/i18n";
 import { formatTime } from "../lib/time";
 
 interface Props {
   tasks: Task[];
-  onAdd: (text: string, dayStart: number, priority: boolean, reminderAt: number | null) => void;
+  onAdd: (text: string, dayStart: number, priority: boolean, reminderAt: number | null, recurrence: Recurrence | null) => void;
   onEdit: (id: number, text: string) => void;
   onDelete: (id: number) => void;
   onClose: () => void;
@@ -27,6 +27,7 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
   const [newPriority, setNewPriority] = useState(false);
   const [newHasTime, setNewHasTime] = useState(false);
   const [newTime, setNewTime] = useState("06:00");
+  const [newRecur, setNewRecur] = useState<Recurrence | "">("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
 
@@ -51,11 +52,12 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
       d.setHours(h || 0, m || 0, 0, 0);
       reminderAt = d.getTime();
     }
-    onAdd(text, selected, newPriority, reminderAt);
+    onAdd(text, selected, newPriority, reminderAt, (newRecur || null) as Recurrence | null);
     setNewText("");
     setNewPriority(false);
     setNewHasTime(false);
     setNewTime("06:00");
+    setNewRecur("");
   };
 
   // Data de calendar a unui task: data programata (fara alarma) sau, daca are,
@@ -236,6 +238,16 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
               <path d="M8 4.6V8l2.2 1.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          <button
+            className={`calendar__prio ${newRecur ? "calendar__prio--time" : ""}`}
+            title={t("recur.label")}
+            aria-pressed={!!newRecur}
+            onClick={() => setNewRecur((r) => (r ? "" : "weekly"))}
+          >
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path d="M13 8a5 5 0 1 1-1.5-3.5M13 2v3h-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           <input
             className="calendar__input"
             value={newText}
@@ -257,6 +269,21 @@ export function CalendarModal({ tasks, onAdd, onEdit, onDelete, onClose }: Props
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
             />
+          </div>
+        )}
+
+        {newRecur && (
+          <div className="calendar__time-row">
+            <span className="type-field__label">{t("recur.label")}</span>
+            <select
+              className="calendar__recur-select"
+              value={newRecur}
+              onChange={(e) => setNewRecur(e.target.value as Recurrence)}
+            >
+              <option value="daily">{t("recur.daily")}</option>
+              <option value="weekly">{t("recur.weekly")}</option>
+              <option value="monthly">{t("recur.monthly")}</option>
+            </select>
           </div>
         )}
       </div>
