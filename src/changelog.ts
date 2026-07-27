@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.3",
+    date: "2026-07-25",
+    changes: [
+      {
+        type: "improved",
+        ro: "Task-urile cu prioritate urcă automat în capul listei, fie când le pui „!”, fie când primesc prioritate pe parcurs — ca să nu se piardă printre cele normale.",
+        en: "Priority tasks automatically float to the top of the list, whether you mark them “!” or they gain priority later — so they don't get lost among the normal ones.",
+      },
+    ],
+  },
+  {
     version: "6.7.2",
     date: "2026-07-25",
     changes: [

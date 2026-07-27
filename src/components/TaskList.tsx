@@ -32,7 +32,19 @@ export function TaskList(props: Props) {
   const [dragId, setDragId] = useState<number | null>(null);
   const [overId, setOverId] = useState<number | null>(null);
 
-  const active = useMemo(() => tasks.filter((t) => !t.completed), [tasks]);
+  const active = useMemo(() => {
+    // Task-urile cu prioritate stau mereu deasupra celor normale. In interiorul
+    // fiecarui grup pastram ordinea existenta (position). Cand un task primeste
+    // prioritate, urca automat sus; cand o pierde, coboara intre cele normale.
+    const list = tasks.filter((t) => !t.completed);
+    return list
+      .map((t, i) => ({ t, i }))
+      .sort((a, b) => {
+        if (a.t.priority !== b.t.priority) return a.t.priority ? -1 : 1;
+        return a.i - b.i;
+      })
+      .map((x) => x.t);
+  }, [tasks]);
   const completed = useMemo(() => tasks.filter((t) => t.completed), [tasks]);
 
   const handleDrop = () => {
