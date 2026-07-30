@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.4",
+    date: "2026-07-30",
+    changes: [
+      {
+        type: "new",
+        ro: "Fiecare sub-task bifat aduce +5 XP, imediat ce îl bifezi. Dacă îl debifezi, punctele se scad la loc.",
+        en: "Each checked sub-task grants +5 XP as soon as you check it. Unchecking it removes the points again.",
+      },
+    ],
+  },
+  {
     version: "6.7.3",
     date: "2026-07-25",
     changes: [

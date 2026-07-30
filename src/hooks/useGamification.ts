@@ -1,5 +1,6 @@
 // XP-ul e calculat LIVE din task-urile terminate care inca exista:
-//   xp = suma valorilor task-urilor bifate (10, +5 daca sunt prioritare).
+//   xp = suma valorilor task-urilor bifate (10, +5 daca sunt prioritare)
+//      + 5 pentru fiecare sub-task bifat (indiferent daca task-ul parinte e gata).
 // Astfel: complete -> creste, debifare -> scade, stergere (manuala sau automata)
 // -> scade, totul automat, fara evenimente separate.
 //
@@ -18,6 +19,7 @@ import {
 const STORAGE_KEY = "quicktasks.game";
 const XP_BASE = 10;
 const XP_PRIORITY_BONUS = 5;
+const XP_SUBTASK = 5;
 const MAX_REWARDED = 1000;
 
 function taskValue(t: Task): number {
@@ -59,7 +61,17 @@ export function useGamification(tasks: Task[]) {
     () => tasks.reduce((sum, t) => sum + (t.completed ? taskValue(t) : 0), 0),
     [tasks]
   );
-  const xp = liveXp + state.bonusXp;
+  // XP live din sub-task-uri bifate (5 fiecare), indiferent daca task-ul parinte
+  // e terminat sau nu — un pas bifat conteaza imediat, nu doar la final.
+  const liveSubtaskXp = useMemo(
+    () =>
+      tasks.reduce(
+        (sum, t) => sum + t.subtasks.filter((s) => s.done).length * XP_SUBTASK,
+        0
+      ),
+    [tasks]
+  );
+  const xp = liveXp + liveSubtaskXp + state.bonusXp;
   const info = levelInfo(xp);
 
   useEffect(() => {
