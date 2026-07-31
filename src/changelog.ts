@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.5",
+    date: "2026-07-30",
+    changes: [
+      {
+        type: "fix",
+        ro: "Fereastra lasă acum o mică margine jos, ca să nu mai pară că intră sub bara de activități.",
+        en: "The window now leaves a small bottom margin, so it no longer looks like it slips under the taskbar.",
+      },
+    ],
+  },
+  {
     version: "6.7.4",
     date: "2026-07-30",
     changes: [
