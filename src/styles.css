@@ -1803,3 +1803,10 @@ body {
   padding: 4px 6px; border-radius: 7px;
 }
 .task__note-add:hover { background: var(--surface-2); color: var(--text); }
+
+.settings__copyright {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  opacity: 0.7;
+}

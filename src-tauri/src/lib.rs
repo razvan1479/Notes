@@ -44,7 +44,7 @@ fn dock_right(window: &tauri::WebviewWindow) {
         };
         if ok != 0 {
             // Lasam o mica margine jos, ca fereastra sa nu para ca intra sub bara.
-            const BOTTOM_MARGIN: i32 = 8;
+            const BOTTOM_MARGIN: i32 = 14;
             let height = (rect.bottom - rect.top - BOTTOM_MARGIN).max(1);
             let x = rect.right - w;
             let y = rect.top;
@@ -64,7 +64,7 @@ fn dock_right(window: &tauri::WebviewWindow) {
         let msize = monitor.size();
         let mpos = monitor.position();
         // Aceeasi mica margine jos ca in ramura cu zona utila.
-        const BOTTOM_MARGIN: u32 = 8;
+        const BOTTOM_MARGIN: u32 = 14;
         let height = msize.height.saturating_sub(BOTTOM_MARGIN).max(1);
         let x = mpos.x + msize.width as i32 - w;
         let y = mpos.y;

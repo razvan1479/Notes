@@ -225,3 +225,11 @@ secret and is never committed.
 - **The Rust backend can't be built outside Windows** — the native layer requires the Windows
   toolchain (MSVC + WebView2). Build and test releases on Windows or via the GitHub Actions
   workflow.
+
+---
+
+## License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+© 2026 Stoica Ioan Razvan (iDeaL)

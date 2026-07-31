@@ -186,6 +186,7 @@ export function Settings({
         <p className="settings__foot">
           {t("settings.foot")}
           {version && <span className="settings__version">{t("settings.version", { v: version })}</span>}
+          <span className="settings__copyright">© {new Date().getFullYear()} Stoica Ioan Razvan (iDeaL)</span>
         </p>
       </div>
 

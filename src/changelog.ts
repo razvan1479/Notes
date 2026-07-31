@@ -30,6 +30,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.6",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "În Setări, sub versiune, apare acum mențiunea de copyright.",
+        en: "In Settings, a copyright line now appears below the version.",
+      },
+      {
+        type: "improved",
+        ro: "Fereastra lasă puțin mai mult spațiu jos, ca să stea clar deasupra barei de activități.",
+        en: "The window leaves a bit more space at the bottom, so it sits clearly above the taskbar.",
+      },
+    ],
+  },
+  {
     version: "6.7.5",
     date: "2026-07-30",
     changes: [
