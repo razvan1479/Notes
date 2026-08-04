@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import type { Task, Recurrence } from "../types";
+import type { NumberingStyle } from "../hooks/useNumbering";
 import { TaskItem } from "./TaskItem";
 import { useI18n } from "../i18n/i18n";
 
@@ -23,6 +24,7 @@ interface Props {
   onDeleteSubtask: (taskId: number, subId: number) => void;
   onSetNote: (id: number, note: string | null) => void;
   onSetRecurrence: (id: number, rec: Recurrence | null) => void;
+  numbering: NumberingStyle;
   onReorderActive: (orderedActiveIds: number[]) => void;
 }
 
@@ -64,12 +66,14 @@ export function TaskList(props: Props) {
     setOverId(null);
   };
 
-  const renderItem = (task: Task, allowDrag: boolean) => (
+  const renderItem = (task: Task, allowDrag: boolean, number: number | null) => (
     <TaskItem
       key={task.id}
       task={task}
       now={props.now}
       selected={props.selectedId === task.id}
+      number={number}
+      numbering={props.numbering}
       onSelect={props.onSelect}
       onToggle={props.onToggle}
       onEditText={props.onEditText}
@@ -114,7 +118,7 @@ export function TaskList(props: Props) {
 
       {active.length > 0 && (
         <section className="list__section">
-          {active.map((t) => renderItem(t, !props.hasQuery))}
+          {active.map((t, i) => renderItem(t, !props.hasQuery, props.numbering === "off" ? null : i + 1))}
         </section>
       )}
 
@@ -124,7 +128,7 @@ export function TaskList(props: Props) {
             <span>{t("list.completed")}</span>
             <span className="list__count">{completed.length}</span>
           </div>
-          {completed.map((t) => renderItem(t, false))}
+          {completed.map((t) => renderItem(t, false, null))}
         </section>
       )}
     </div>

@@ -17,6 +17,7 @@ import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
 import { useTasks } from "./hooks/useTasks";
 import { useTheme } from "./hooks/useTheme";
+import { useNumbering } from "./hooks/useNumbering";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { useUpdate } from "./hooks/useUpdate";
 import { useColors } from "./hooks/useColors";
@@ -40,6 +41,7 @@ export default function App() {
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
   const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, addSubtask, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
+  const { numbering, setNumbering } = useNumbering();
   const update = useUpdate();
   const colors = useColors(theme);
   const game = useGamification(tasks);
@@ -279,6 +281,7 @@ onOpenStats={() => setStatsOpen(true)}
           onDeleteSubtask={removeSubtask}
           onSetNote={setNote}
           onSetRecurrence={setRecurrence}
+          numbering={numbering}
           onReorderActive={reorderActive}
         />
       )}
@@ -290,6 +293,8 @@ onOpenStats={() => setStatsOpen(true)}
           onClose={() => setSettingsOpen(false)}
           colors={colors}
           onReset={handleReset}
+          numbering={numbering}
+          onSetNumbering={setNumbering}
         />
       )}
 

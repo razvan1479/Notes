@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { getVersion } from "@tauri-apps/api/app";
+import type { NumberingStyle } from "../hooks/useNumbering";
 import { ColorCustomizer } from "./ColorCustomizer";
 import { useTypography, MIN_SIZE, MAX_SIZE } from "../hooks/useTypography";
 import { useI18n } from "../i18n/i18n";
@@ -16,6 +17,8 @@ interface Props {
   onClose: () => void;
   colors: ReturnType<typeof useColors>;
   onReset: () => void;
+  numbering: NumberingStyle;
+  onSetNumbering: (n: NumberingStyle) => void;
 }
 
 export function Settings({
@@ -24,6 +27,8 @@ export function Settings({
   onClose,
   colors,
   onReset,
+  numbering,
+  onSetNumbering,
 }: Props) {
   const { t, lang, setLang } = useI18n();
   const [autostart, setAutostart] = useState<boolean | null>(null);
@@ -130,6 +135,24 @@ export function Settings({
             >
               {t("settings.theme_dark")}
             </button>
+          </div>
+        </div>
+
+        <div className="settings__row settings__row--block">
+          <span className="settings__title">{t("settings.numbering_title")}</span>
+          <span className="settings__desc">{t("settings.numbering_desc")}</span>
+          <div className="segmented segmented--wrap">
+            {(["off", "plain", "badge", "ghost"] as const).map((opt) => (
+              <button
+                key={opt}
+                className={
+                  numbering === opt ? "segmented__opt segmented__opt--on" : "segmented__opt"
+                }
+                onClick={() => onSetNumbering(opt)}
+              >
+                {t(`settings.numbering_${opt}`)}
+              </button>
+            ))}
           </div>
         </div>
 

@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n/i18n";
 import type { Task, Recurrence } from "../types";
+import type { NumberingStyle } from "../hooks/useNumbering";
 import {
   AUTO_DELETE_MS,
   WARNING_MS,
@@ -28,6 +29,8 @@ interface Props {
   onDeleteSubtask: (taskId: number, subId: number) => void;
   onSetNote: (id: number, note: string | null) => void;
   onSetRecurrence: (id: number, rec: Recurrence | null) => void;
+  number?: number | null;
+  numbering?: NumberingStyle;
   // Drag & drop (doar pentru task-urile active).
   draggable?: boolean;
   onDragStart?: (id: number) => void;
@@ -191,6 +194,11 @@ export function TaskItem(props: Props) {
       onDragEnd={() => props.onDragEnd?.()}
     >
       <div className="task__row" onClick={() => props.onSelect(task.id)}>
+      {props.number != null && props.numbering && props.numbering !== "off" && (
+        <span className={`task__num task__num--${props.numbering}`} aria-hidden="true">
+          {props.number}
+        </span>
+      )}
       <button
         className="task__check"
         role="checkbox"

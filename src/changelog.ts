@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.7",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Numerotarea task-urilor active, opțională. Din Setări alegi stilul — simplu, bulină sau fantomă — sau o poți dezactiva.",
+        en: "Optional numbering for active tasks. From Settings you pick the style — simple, badge, or ghost — or turn it off.",
+      },
+    ],
+  },
+  {
     version: "6.7.6",
     date: "2026-07-31",
     changes: [
