@@ -150,6 +150,9 @@ export const translations: Record<Lang, Dict> = {
     "report.bullets": "• Bullets",
     "report.copy": "Copy",
     "report.copy_all": "Copy all",
+    "report.prev_month": "Previous month",
+    "report.next_month": "Next month",
+    "report.this_month": "↩ Back to current month",
     "report.copied": "Copied",
     "report.autosave": "Saved automatically for the selected month.",
 
@@ -345,6 +348,9 @@ export const translations: Record<Lang, Dict> = {
     "report.bullets": "• Buline",
     "report.copy": "Copiază",
     "report.copy_all": "Copiază tot",
+    "report.prev_month": "Luna anterioară",
+    "report.next_month": "Luna următoare",
+    "report.this_month": "↩ Revino la luna curentă",
     "report.copied": "Copiat",
     "report.autosave": "Se salvează automat pentru luna selectată.",
 

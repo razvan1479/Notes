@@ -30,6 +30,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.10",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "improved",
+        ro: "În raport, butonul de bulină pune (sau scoate) bulina doar pe rândul pe care lucrezi, nu pe toate rândurile.",
+        en: "In the report, the bullet button adds (or removes) the bullet only on the line you're working on, not on every line.",
+      },
+      {
+        type: "new",
+        ro: "În raport poți naviga între luni cu săgeți sau alege orice lună (inclusiv viitoare) dintr-o grilă, ca să notezi idei din timp. Lunile cu raport sunt marcate cu o bulină.",
+        en: "In the report you can move between months with arrows or pick any month (including future ones) from a grid, to jot down ideas ahead of time. Months with a report are marked with a dot.",
+      },
+      {
+        type: "improved",
+        ro: "Butonul „Copiază tot” a fost scos; copiezi fiecare casetă separat.",
+        en: "The “Copy all” button was removed; you copy each section separately.",
+      },
+    ],
+  },
+  {
     version: "6.7.9",
     date: "2026-07-31",
     changes: [

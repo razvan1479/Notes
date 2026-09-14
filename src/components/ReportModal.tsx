@@ -31,18 +31,41 @@ function currentMonth(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/** Adauga "• " la inceputul fiecarui rand neinceput deja cu bulina. */
-function bulletize(text: string): string {
-  return text
-    .split("\n")
-    .map((line) => {
-      const t = line.trim();
-      if (!t) return line;
-      if (t.startsWith("• ")) return line;
-      if (t.startsWith("•")) return line.replace(/•\s?/, "• ");
-      return "• " + line.replace(/^\s+/, "");
-    })
-    .join("\n");
+/** Deplaseaza o luna "YYYY-MM" cu delta luni (poate fi negativ sau pozitiv). */
+function shiftMonth(m: string, delta: number): string {
+  const [y, mo] = m.split("-").map(Number);
+  const d = new Date(y, mo - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Comuta bulina "• " DOAR pe randul unde e cursorul (selectionStart). */
+function toggleBulletAtCursor(
+  el: HTMLTextAreaElement
+): { text: string; caret: number } {
+  const value = el.value;
+  const pos = el.selectionStart ?? value.length;
+  // Gasim inceputul si sfarsitul randului curent.
+  const lineStart = value.lastIndexOf("\n", pos - 1) + 1;
+  let lineEnd = value.indexOf("\n", pos);
+  if (lineEnd === -1) lineEnd = value.length;
+  const line = value.slice(lineStart, lineEnd);
+
+  const hasBullet = /^\s*•\s?/.test(line);
+  let newLine: string;
+  let delta: number;
+  if (hasBullet) {
+    // Scoatem bulina.
+    newLine = line.replace(/^(\s*)•\s?/, "$1");
+    delta = newLine.length - line.length;
+  } else {
+    // Adaugam bulina, pastrand eventuala indentare.
+    const indent = line.match(/^\s*/)?.[0] ?? "";
+    newLine = indent + "• " + line.slice(indent.length);
+    delta = newLine.length - line.length;
+  }
+  const text = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
+  const caret = Math.max(lineStart, pos + delta);
+  return { text, caret };
 }
 
 const EMPTY = (m: string): MonthlyReport => ({
@@ -59,7 +82,17 @@ export function ReportModal({ onClose, standalone }: Props) {
   const [months, setMonths] = useState<string[]>([]);
   const [report, setReport] = useState<MonthlyReport>(EMPTY(currentMonth()));
   const [copied, setCopied] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState<number>(
+    Number(currentMonth().split("-")[0])
+  );
   const saveTimer = useRef<number | null>(null);
+  const areaRefs = useRef<Record<SectionKey, HTMLTextAreaElement | null>>({
+    highlights: null,
+    lowlights: null,
+    risks: null,
+    outlook: null,
+  });
 
   // Lista lunilor existente (plus luna curenta, mereu disponibila).
   useEffect(() => {
@@ -102,6 +135,15 @@ export function ReportModal({ onClose, standalone }: Props) {
     });
   };
 
+  const shortMonths = Array.from({ length: 12 }, (_, i) =>
+    new Date(2000, i, 1).toLocaleDateString(locale, { month: "short" }).replace(".", "")
+  );
+
+  const goMonth = (m: string) => {
+    setMonth(m);
+    setPickerYear(Number(m.split("-")[0]));
+  };
+
   const flash = (id: string) => {
     setCopied(id);
     window.setTimeout(() => setCopied((c) => (c === id ? null : c)), 1200);
@@ -116,30 +158,92 @@ export function ReportModal({ onClose, standalone }: Props) {
     }
   };
 
-  const copyAll = () => {
-    const parts = SECTIONS.map((s) => {
-      const body = report[s.key].trim();
-      return `${t(s.titleKey)}\n${body}`;
-    });
-    void copyText(parts.join("\n\n"), "all");
-  };
-
   const body = (
-      <div className={standalone ? "report report--full" : "report"} onClick={(e) => e.stopPropagation()}>
+      <div className={standalone ? "report report--full" : "report"} onClick={(e) => { e.stopPropagation(); setPickerOpen(false); }}>
         <div className="report__head">
           <h2>{t("report.title")}</h2>
           <div className="report__head-right">
-            <select
-              className="report__month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            >
-              {months.map((m) => (
-                <option key={m} value={m}>
-                  {monthLabel(m)}
-                </option>
-              ))}
-            </select>
+            <div className="monthnav" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="monthnav__arrow"
+                aria-label={t("report.prev_month")}
+                title={t("report.prev_month")}
+                onClick={() => goMonth(shiftMonth(month, -1))}
+              >
+                ‹
+              </button>
+              <button
+                className="monthnav__label"
+                onClick={() => setPickerOpen((v) => !v)}
+                aria-expanded={pickerOpen}
+              >
+                {monthLabel(month)} ▾
+              </button>
+              <button
+                className="monthnav__arrow"
+                aria-label={t("report.next_month")}
+                title={t("report.next_month")}
+                onClick={() => goMonth(shiftMonth(month, 1))}
+              >
+                ›
+              </button>
+
+              {pickerOpen && (
+                <div className="monthpop" onClick={(e) => e.stopPropagation()}>
+                  <div className="monthpop__year">
+                    <button
+                      className="monthpop__ybtn"
+                      aria-label="-1"
+                      onClick={() => setPickerYear((y) => y - 1)}
+                    >
+                      ‹
+                    </button>
+                    <b>{pickerYear}</b>
+                    <button
+                      className="monthpop__ybtn"
+                      aria-label="+1"
+                      onClick={() => setPickerYear((y) => y + 1)}
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <div className="monthpop__grid">
+                    {shortMonths.map((name, i) => {
+                      const key = `${pickerYear}-${String(i + 1).padStart(2, "0")}`;
+                      const isSel = key === month;
+                      const hasReport = months.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          className={[
+                            "monthpop__m",
+                            isSel ? "monthpop__m--sel" : "",
+                            hasReport ? "monthpop__m--has" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          onClick={() => {
+                            goMonth(key);
+                            setPickerOpen(false);
+                          }}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    className="monthpop__today"
+                    onClick={() => {
+                      goMonth(currentMonth());
+                      setPickerOpen(false);
+                    }}
+                  >
+                    {t("report.this_month")}
+                  </button>
+                </div>
+              )}
+            </div>
             {!standalone && (
               <button className="icon-btn" onClick={onClose} aria-label="×">
                 ×
@@ -154,6 +258,7 @@ export function ReportModal({ onClose, standalone }: Props) {
               <div className="report__cell-head">{t(s.titleKey)}</div>
               <textarea
                 className="report__area"
+                ref={(el) => (areaRefs.current[s.key] = el)}
                 placeholder={t("report.placeholder")}
                 value={report[s.key]}
                 onChange={(e) => setField(s.key, e.target.value)}
@@ -162,7 +267,17 @@ export function ReportModal({ onClose, standalone }: Props) {
                 <button
                   className="report__mini"
                   title={t("report.bullets")}
-                  onClick={() => setField(s.key, bulletize(report[s.key]))}
+                  onClick={() => {
+                    const el = areaRefs.current[s.key];
+                    if (!el) return;
+                    const { text, caret } = toggleBulletAtCursor(el);
+                    setField(s.key, text);
+                    // Repunem cursorul pe randul curent, dupa modificare.
+                    requestAnimationFrame(() => {
+                      el.focus();
+                      el.setSelectionRange(caret, caret);
+                    });
+                  }}
                 >
                   {t("report.bullets")}
                 </button>
@@ -179,9 +294,6 @@ export function ReportModal({ onClose, standalone }: Props) {
 
         <div className="report__foot">
           <span className="report__hint">{t("report.autosave")}</span>
-          <button className="popup__btn popup__btn--primary" onClick={copyAll}>
-            {copied === "all" ? t("report.copied") : t("report.copy_all")}
-          </button>
         </div>
       </div>
   );
