@@ -20,5 +20,11 @@ export default defineConfig({
     target: "esnext",
     minify: "esbuild",
     sourcemap: false,
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        report: "report.html",
+      },
+    },
   },
 });

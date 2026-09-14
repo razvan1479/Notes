@@ -13,7 +13,8 @@ import {
 } from "../db/database";
 
 interface Props {
-  onClose: () => void;
+  onClose?: () => void;
+  standalone?: boolean;
 }
 
 type SectionKey = "highlights" | "lowlights" | "risks" | "outlook";
@@ -52,7 +53,7 @@ const EMPTY = (m: string): MonthlyReport => ({
   outlook: "",
 });
 
-export function ReportModal({ onClose }: Props) {
+export function ReportModal({ onClose, standalone }: Props) {
   const { t, locale } = useI18n();
   const [month, setMonth] = useState<string>(currentMonth());
   const [months, setMonths] = useState<string[]>([]);
@@ -123,9 +124,8 @@ export function ReportModal({ onClose }: Props) {
     void copyText(parts.join("\n\n"), "all");
   };
 
-  return (
-    <div className="overlay" onClick={onClose}>
-      <div className="report" onClick={(e) => e.stopPropagation()}>
+  const body = (
+      <div className={standalone ? "report report--full" : "report"} onClick={(e) => e.stopPropagation()}>
         <div className="report__head">
           <h2>{t("report.title")}</h2>
           <div className="report__head-right">
@@ -140,9 +140,11 @@ export function ReportModal({ onClose }: Props) {
                 </option>
               ))}
             </select>
-            <button className="icon-btn" onClick={onClose} aria-label="×">
-              ×
-            </button>
+            {!standalone && (
+              <button className="icon-btn" onClick={onClose} aria-label="×">
+                ×
+              </button>
+            )}
           </div>
         </div>
 
@@ -182,6 +184,12 @@ export function ReportModal({ onClose }: Props) {
           </button>
         </div>
       </div>
+  );
+
+  if (standalone) return body;
+  return (
+    <div className="overlay" onClick={onClose}>
+      {body}
     </div>
   );
 }

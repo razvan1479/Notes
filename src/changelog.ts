@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.9",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "improved",
+        ro: "Raportul lunar se deschide acum într-o fereastră separată, pe care o poți muta oriunde și redimensiona ca orice fereastră Windows.",
+        en: "The monthly report now opens in a separate window you can move anywhere and resize like any Windows window.",
+      },
+    ],
+  },
+  {
     version: "6.7.8",
     date: "2026-07-31",
     changes: [

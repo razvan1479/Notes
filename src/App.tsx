@@ -12,7 +12,8 @@ import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
 import { ReminderAlert } from "./components/ReminderAlert";
 import { StatsModal } from "./components/StatsModal";
-import { ReportModal } from "./components/ReportModal";
+// Fereastra de raport e nativa (separata), o deschidem la cerere.
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { ChangelogModal } from "./components/ChangelogModal";
 import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
@@ -116,7 +117,27 @@ export default function App() {
   // Daca exista versiuni necitite, se arata intai "ce e nou" (mod "new");
   // dupa "Am inteles" trecem la istoricul complet (mod "all").
   const [statsOpen, setStatsOpen] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
+  const openReportWindow = useCallback(async () => {
+    const existing = await WebviewWindow.getByLabel("report");
+    if (existing) {
+      await existing.show();
+      await existing.unminimize();
+      await existing.setFocus();
+      return;
+    }
+    const w = new WebviewWindow("report", {
+      url: "report.html",
+      title: "Monthly report",
+      width: 900,
+      height: 620,
+      minWidth: 480,
+      minHeight: 360,
+      resizable: true,
+      center: true,
+      decorations: true,
+    });
+    w.once("tauri://error", (e) => console.error("report window error", e));
+  }, []);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [changelogMode, setChangelogMode] = useState<"new" | "all">("all");
   const [newsEntries, setNewsEntries] = useState<typeof changelog.unread>([]);
@@ -236,7 +257,7 @@ export default function App() {
         onOpenCalendar={() => setCalendarOpen(true)}
         changelogDot={changelog.unreadCount > 0}
 onOpenStats={() => setStatsOpen(true)}
-        onOpenReport={() => setReportOpen(true)}
+        onOpenReport={openReportWindow}
         onOpenChangelog={openChangelog}
         onCheckUpdate={() => {
           setUpdateForced(false);
@@ -314,8 +335,6 @@ onOpenStats={() => setStatsOpen(true)}
       {calendarOpen && (
         <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onEdit={editText} onDelete={remove} onClose={() => setCalendarOpen(false)} />
       )}
-
-      {reportOpen && <ReportModal onClose={() => setReportOpen(false)} />}
 
       {statsOpen && (
         <StatsModal level={game.level} onClose={() => setStatsOpen(false)} />
