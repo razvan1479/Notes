@@ -183,14 +183,15 @@ export function Header({
         </button>
 
         <button className="icon-btn" onClick={onOpenSettings} aria-label={t("header.settings")} title={t("header.settings")}>
-          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
-            <circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path
-              d="M10 1.5v2M10 16.5v2M18.5 10h-2M3.5 10h-2M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4M15.8 15.8l-1.4-1.4M5.6 5.6L4.2 4.2"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+            </g>
+            <circle cx="9" cy="7" r="2.3" fill="var(--surface)" stroke="currentColor" strokeWidth="1.8" />
+            <circle cx="15" cy="12" r="2.3" fill="var(--surface)" stroke="currentColor" strokeWidth="1.8" />
+            <circle cx="8" cy="17" r="2.3" fill="var(--surface)" stroke="currentColor" strokeWidth="1.8" />
           </svg>
         </button>
       </div>

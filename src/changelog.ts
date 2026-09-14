@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.11",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "improved",
+        ro: "Iconița de setări a fost schimbată (slidere), ca să nu mai semene cu butonul de temă.",
+        en: "The settings icon was changed (sliders), so it no longer resembles the theme button.",
+      },
+    ],
+  },
+  {
     version: "6.7.10",
     date: "2026-07-31",
     changes: [
