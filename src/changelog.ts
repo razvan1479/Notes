@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.8",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Raport lunar: un buton nou în bara de sus deschide o fereastră cu patru casete (Highlights last month, Lowlights last month, Actual risks, Outlook). Scrii în ele, ai câte un raport pe lună, poți adăuga buline și copia fiecare casetă sau tot raportul.",
+        en: "Monthly report: a new top-bar button opens a window with four sections (Highlights last month, Lowlights last month, Actual risks, Outlook). Fill them in, keep one report per month, add bullets, and copy each section or the whole report.",
+      },
+    ],
+  },
+  {
     version: "6.7.7",
     date: "2026-07-31",
     changes: [

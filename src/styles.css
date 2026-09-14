@@ -13,6 +13,7 @@
   --text-muted: #8a8a99;
   --accent: #4f6df5;
   --accent-soft: rgba(79, 109, 245, 0.12);
+  --report-head: #1f4e79;
   --done-text: #a6a6b2;
   --warn: #d98a25;
   --danger: #e5484d;
@@ -33,6 +34,7 @@
   --text-muted: #82828f;
   --accent: #7c90ff;
   --accent-soft: rgba(124, 144, 255, 0.16);
+  --report-head: #2b5f92;
   --done-text: #6a6a76;
   --warn: #e9a94a;
   --danger: #f16a6e;
@@ -1843,3 +1845,92 @@ body {
   opacity: 0.35;
 }
 .segmented--wrap { flex-wrap: wrap; }
+
+/* ---- Raport lunar ---- */
+.report {
+  width: min(880px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.report__head h2 { font-size: 18px; font-weight: 800; color: var(--text); }
+.report__head-right { display: flex; align-items: center; gap: 8px; }
+.report__month {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.report__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.report__cell {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.report__cell-head {
+  background: var(--report-head, #1f4e79);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  text-align: center;
+  padding: 9px;
+}
+.report__area {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px;
+  min-height: 150px;
+  resize: vertical;
+  outline: none;
+}
+.report__area:focus { background: var(--surface-2); }
+.report__cell-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 4px 6px 6px;
+  border-top: 1px solid var(--border);
+}
+.report__mini {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.report__mini:hover { background: var(--surface-2); color: var(--accent); }
+.report__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+.report__hint { font-size: 12px; color: var(--text-muted); }

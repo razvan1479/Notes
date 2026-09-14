@@ -12,6 +12,7 @@ import { ReminderDialog } from "./components/ReminderDialog";
 import { CalendarModal } from "./components/CalendarModal";
 import { ReminderAlert } from "./components/ReminderAlert";
 import { StatsModal } from "./components/StatsModal";
+import { ReportModal } from "./components/ReportModal";
 import { ChangelogModal } from "./components/ChangelogModal";
 import { GamificationBar } from "./components/GamificationBar";
 import { AchievementsModal } from "./components/AchievementsModal";
@@ -115,6 +116,7 @@ export default function App() {
   // Daca exista versiuni necitite, se arata intai "ce e nou" (mod "new");
   // dupa "Am inteles" trecem la istoricul complet (mod "all").
   const [statsOpen, setStatsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [changelogMode, setChangelogMode] = useState<"new" | "all">("all");
   const [newsEntries, setNewsEntries] = useState<typeof changelog.unread>([]);
@@ -234,6 +236,7 @@ export default function App() {
         onOpenCalendar={() => setCalendarOpen(true)}
         changelogDot={changelog.unreadCount > 0}
 onOpenStats={() => setStatsOpen(true)}
+        onOpenReport={() => setReportOpen(true)}
         onOpenChangelog={openChangelog}
         onCheckUpdate={() => {
           setUpdateForced(false);
@@ -311,6 +314,8 @@ onOpenStats={() => setStatsOpen(true)}
       {calendarOpen && (
         <CalendarModal tasks={tasks} onAdd={handleCalendarAdd} onEdit={editText} onDelete={remove} onClose={() => setCalendarOpen(false)} />
       )}
+
+      {reportOpen && <ReportModal onClose={() => setReportOpen(false)} />}
 
       {statsOpen && (
         <StatsModal level={game.level} onClose={() => setStatsOpen(false)} />

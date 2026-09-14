@@ -13,6 +13,7 @@ interface Props {
   onOpenCalendar: () => void;
   changelogDot: boolean;
   onOpenStats: () => void;
+  onOpenReport: () => void;
   onOpenChangelog: () => void;
   onCheckUpdate: () => void;
   onOpenSettings: () => void;
@@ -27,6 +28,7 @@ export function Header({
   onOpenCalendar,
   changelogDot,
   onOpenStats,
+  onOpenReport,
   onOpenChangelog,
   onCheckUpdate,
   onOpenSettings,
@@ -92,6 +94,20 @@ export function Header({
             <line x1="2.5" y1="8" x2="17.5" y2="8" stroke="currentColor" strokeWidth="2" />
             <line x1="6.5" y1="2.5" x2="6.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             <line x1="13.5" y1="2.5" x2="13.5" y2="5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        <button
+          className="icon-btn"
+          onClick={onOpenReport}
+          aria-label={t("header.report")}
+          title={t("header.report")}
+        >
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+            <rect x="3" y="3" width="6" height="6" rx="1.3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            <rect x="11" y="3" width="6" height="6" rx="1.3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            <rect x="3" y="11" width="6" height="6" rx="1.3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            <rect x="11" y="11" width="6" height="6" rx="1.3" fill="none" stroke="currentColor" strokeWidth="1.7" />
           </svg>
         </button>
 

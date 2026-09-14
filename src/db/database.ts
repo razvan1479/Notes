@@ -400,3 +400,71 @@ export async function getDailyStats(days: number): Promise<DailyStat[]> {
     .map((r) => ({ day: r.day, completed: Number(r.completed) }))
     .sort((a, b) => a.day.localeCompare(b.day));
 }
+
+// ---------- Rapoarte lunare ----------
+// Un raport per luna (cheie "YYYY-MM"), cu cele 4 sectiuni ca text.
+
+export interface MonthlyReport {
+  month: string; // "YYYY-MM"
+  highlights: string;
+  lowlights: string;
+  risks: string;
+  outlook: string;
+}
+
+async function ensureReportsTable(): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `CREATE TABLE IF NOT EXISTS reports (
+      month     TEXT PRIMARY KEY,
+      highlights TEXT NOT NULL DEFAULT '',
+      lowlights  TEXT NOT NULL DEFAULT '',
+      risks      TEXT NOT NULL DEFAULT '',
+      outlook    TEXT NOT NULL DEFAULT ''
+    );`
+  );
+}
+
+/** Lunile care au deja un raport, cele mai noi primele. */
+export async function getReportMonths(): Promise<string[]> {
+  await ensureReportsTable();
+  const db = await getDb();
+  const rows = await db.select<{ month: string }[]>(
+    `SELECT month FROM reports ORDER BY month DESC;`
+  );
+  return rows.map((r) => r.month);
+}
+
+/** Raportul unei luni, sau null daca nu exista inca. */
+export async function getReport(month: string): Promise<MonthlyReport | null> {
+  await ensureReportsTable();
+  const db = await getDb();
+  const rows = await db.select<MonthlyReport[]>(
+    `SELECT month, highlights, lowlights, risks, outlook FROM reports WHERE month = $1;`,
+    [month]
+  );
+  return rows[0] ?? null;
+}
+
+/** Salveaza (sau actualizeaza) raportul unei luni. */
+export async function saveReport(r: MonthlyReport): Promise<void> {
+  await ensureReportsTable();
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO reports (month, highlights, lowlights, risks, outlook)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT(month) DO UPDATE SET
+       highlights = excluded.highlights,
+       lowlights  = excluded.lowlights,
+       risks      = excluded.risks,
+       outlook    = excluded.outlook;`,
+    [r.month, r.highlights, r.lowlights, r.risks, r.outlook]
+  );
+}
+
+/** Sterge raportul unei luni. */
+export async function deleteReport(month: string): Promise<void> {
+  await ensureReportsTable();
+  const db = await getDb();
+  await db.execute(`DELETE FROM reports WHERE month = $1;`, [month]);
+}
