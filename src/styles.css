@@ -2238,3 +2238,15 @@ body {
   border-color: var(--accent);
   border-style: solid;
 }
+
+/* Miniatură poză în rândul task-ului */
+.task__row-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  cursor: zoom-in;
+  align-self: center;
+}

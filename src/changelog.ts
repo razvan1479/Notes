@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.17",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Poza atașată apare acum ca miniatură direct în rândul task-ului, în listă. Click pe ea o deschide mărită. Un task doar cu poză (fără text) arată „Screenshot (fără titlu)”.",
+        en: "An attached photo now shows as a thumbnail right in the task's row, in the list. Clicking it opens it full-size. A photo-only task (no text) shows “Screenshot (no title)”.",
+      },
+    ],
+  },
+  {
     version: "6.7.16",
     date: "2026-07-31",
     changes: [

@@ -325,6 +325,19 @@ export function TaskItem(props: Props) {
         </span>
       )}
 
+      {task.image && (
+        <img
+          src={task.image}
+          alt=""
+          className="task__row-thumb"
+          title={t("photo.window_title")}
+          onClick={(e) => {
+            e.stopPropagation();
+            openImageWindow();
+          }}
+        />
+      )}
+
       <div className="task__body">
         {editing ? (
           <input
@@ -352,7 +365,13 @@ export function TaskItem(props: Props) {
               setEditing(true);
             }}
           >
-            {task.text || <span className="task__placeholder">{t("task.empty_placeholder")}</span>}
+            {task.text ? (
+              task.text
+            ) : task.image ? (
+              <span className="task__placeholder">{t("task.photo_only")}</span>
+            ) : (
+              <span className="task__placeholder">{t("task.empty_placeholder")}</span>
+            )}
           </span>
         )}
 
