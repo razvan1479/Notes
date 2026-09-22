@@ -2146,3 +2146,5 @@ body {
   place-items: center;
 }
 .lightbox__close:hover { background: rgba(255, 255, 255, 0.22); }
+
+.task__photo-empty { display: flex; gap: 4px; }

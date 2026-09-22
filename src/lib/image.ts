@@ -5,7 +5,7 @@
 const MAX_DIMENSION = 1280;
 const JPEG_QUALITY = 0.82;
 
-export function readAndCompressImage(file: File): Promise<string> {
+export function readAndCompressImage(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(reader.error);

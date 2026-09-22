@@ -175,6 +175,45 @@ export function TaskItem(props: Props) {
     }
   };
 
+  // Lipeste o imagine din clipboard (Print Screen, "Copy image" etc.).
+  const pasteImageFromClipboard = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const type = item.types.find((tp) => tp.startsWith("image/"));
+        if (type) {
+          const blob = await item.getType(type);
+          const dataUrl = await readAndCompressImage(blob);
+          props.onSetImage(task.id, dataUrl);
+          return;
+        }
+      }
+    } catch {
+      /* clipboard fara imagine sau permisiune refuzata */
+    }
+  };
+
+  // Prinde Ctrl+V cand panoul de detalii e deschis (pe zona lui).
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type.startsWith("image/")) {
+        const blob = it.getAsFile();
+        if (blob) {
+          e.preventDefault();
+          try {
+            const dataUrl = await readAndCompressImage(blob);
+            props.onSetImage(task.id, dataUrl);
+          } catch {
+            /* ignoram */
+          }
+        }
+        return;
+      }
+    }
+  };
+
   const cancel = () => {
     setDraft(task.text);
     setEditing(false);
@@ -412,7 +451,11 @@ export function TaskItem(props: Props) {
       </div>
 
       {expanded && !task.completed && (
-        <div className="task__expand" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="task__expand"
+          onClick={(e) => e.stopPropagation()}
+          onPaste={handlePaste}
+        >
           <div className="sub-list">
             {task.subtasks.map((s) => (
               <div key={s.id} className="sub">
@@ -482,6 +525,9 @@ export function TaskItem(props: Props) {
                   >
                     {t("photo.replace")}
                   </button>
+                  <button className="report__mini" onClick={pasteImageFromClipboard}>
+                    {t("photo.paste")}
+                  </button>
                   <button
                     className="report__mini"
                     onClick={() => props.onSetImage(task.id, null)}
@@ -491,12 +537,17 @@ export function TaskItem(props: Props) {
                 </div>
               </div>
             ) : (
-              <button
-                className="task__photo-add"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {t("photo.add")}
-              </button>
+              <div className="task__photo-empty">
+                <button
+                  className="task__photo-add"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {t("photo.add")}
+                </button>
+                <button className="task__photo-add" onClick={pasteImageFromClipboard}>
+                  {t("photo.paste")}
+                </button>
+              </div>
             )}
           </div>
 

@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.13",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Poți lipi o poză din clipboard (Print Screen / Copy image) direct pe task, cu Ctrl+V în panoul de detalii sau butonul „Lipește”.",
+        en: "You can paste a photo from the clipboard (Print Screen / Copy image) straight onto a task, with Ctrl+V in the details panel or the “Paste” button.",
+      },
+    ],
+  },
+  {
     version: "6.7.12",
     date: "2026-07-31",
     changes: [
