@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n/i18n";
 import type { Task, Recurrence } from "../types";
 import type { NumberingStyle } from "../hooks/useNumbering";
+import { readAndCompressImage } from "../lib/image";
 import {
   AUTO_DELETE_MS,
   WARNING_MS,
@@ -29,6 +30,7 @@ interface Props {
   onDeleteSubtask: (taskId: number, subId: number) => void;
   onSetNote: (id: number, note: string | null) => void;
   onSetRecurrence: (id: number, rec: Recurrence | null) => void;
+  onSetImage: (id: number, image: string | null) => void;
   number?: number | null;
   numbering?: NumberingStyle;
   // Drag & drop (doar pentru task-urile active).
@@ -103,6 +105,8 @@ export function TaskItem(props: Props) {
   const [subDraft, setSubDraft] = useState("");
   const [noteDraft, setNoteDraft] = useState(task.note ?? "");
   const [editingNote, setEditingNote] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -157,6 +161,18 @@ export function TaskItem(props: Props) {
     setEditingNote(false);
     const clean = noteDraft.trim() ? noteDraft : null;
     if ((task.note ?? "") !== (clean ?? "")) props.onSetNote(task.id, clean);
+  };
+
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite re-alegerea aceluiasi fisier
+    if (!file) return;
+    try {
+      const dataUrl = await readAndCompressImage(file);
+      props.onSetImage(task.id, dataUrl);
+    } catch {
+      /* fisier invalid, ignoram */
+    }
   };
 
   const cancel = () => {
@@ -443,6 +459,47 @@ export function TaskItem(props: Props) {
             </div>
           </div>
 
+          <div className="task__photo-row">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="task__photo-input"
+              onChange={handleImagePick}
+            />
+            {task.image ? (
+              <div className="task__photo-wrap">
+                <img
+                  src={task.image}
+                  alt=""
+                  className="task__photo-thumb"
+                  onClick={() => setLightboxOpen(true)}
+                />
+                <div className="task__photo-actions">
+                  <button
+                    className="report__mini"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {t("photo.replace")}
+                  </button>
+                  <button
+                    className="report__mini"
+                    onClick={() => props.onSetImage(task.id, null)}
+                  >
+                    {t("photo.remove")}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="task__photo-add"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {t("photo.add")}
+              </button>
+            )}
+          </div>
+
           {editingNote ? (
             <textarea
               ref={noteRef}
@@ -476,6 +533,19 @@ export function TaskItem(props: Props) {
               {t("note.add")}
             </button>
           )}
+        </div>
+      )}
+
+      {lightboxOpen && task.image && (
+        <div className="lightbox" onClick={() => setLightboxOpen(false)}>
+          <img src={task.image} alt="" className="lightbox__img" />
+          <button
+            className="lightbox__close"
+            aria-label={t("photo.close")}
+            onClick={() => setLightboxOpen(false)}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

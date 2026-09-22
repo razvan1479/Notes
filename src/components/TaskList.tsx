@@ -24,6 +24,7 @@ interface Props {
   onDeleteSubtask: (taskId: number, subId: number) => void;
   onSetNote: (id: number, note: string | null) => void;
   onSetRecurrence: (id: number, rec: Recurrence | null) => void;
+  onSetImage: (id: number, image: string | null) => void;
   numbering: NumberingStyle;
   onReorderActive: (orderedActiveIds: number[]) => void;
 }
@@ -86,6 +87,7 @@ export function TaskList(props: Props) {
       onDeleteSubtask={props.onDeleteSubtask}
       onSetNote={props.onSetNote}
       onSetRecurrence={props.onSetRecurrence}
+      onSetImage={props.onSetImage}
       draggable={allowDrag}
       onDragStart={setDragId}
       onDragOver={setOverId}

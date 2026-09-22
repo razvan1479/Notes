@@ -16,6 +16,7 @@ import {
   setTaskReminder,
   setTaskScheduled,
   setTaskNote,
+  setTaskImage,
   setTaskRecurrence,
   addSubtask as dbAddSubtask,
   setSubtaskDone,
@@ -267,6 +268,11 @@ export function useTasks(onBonus?: (count: number) => void) {
     await setTaskRecurrence(id, recurrence);
   }, []);
 
+  const setImage = useCallback(async (id: number, image: string | null) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, image } : t)));
+    await setTaskImage(id, image);
+  }, []);
+
   const addSubtask = useCallback(async (taskId: number, text: string) => {
     if (!text.trim()) return;
     const sub = await dbAddSubtask(taskId, text);
@@ -355,6 +361,7 @@ export function useTasks(onBonus?: (count: number) => void) {
     setReminder,
     setNote,
     setRecurrence,
+    setImage,
     addSubtask,
     toggleSubtask,
     editSubtask,

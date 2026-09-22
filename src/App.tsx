@@ -41,7 +41,7 @@ function norm(s: string): string {
 export default function App() {
   const bonusRef = useRef<(count: number) => void>(() => {});
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
-  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, addSubtask, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
+  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, setImage, addSubtask, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const { numbering, setNumbering } = useNumbering();
   const update = useUpdate();
@@ -305,6 +305,7 @@ onOpenStats={() => setStatsOpen(true)}
           onDeleteSubtask={removeSubtask}
           onSetNote={setNote}
           onSetRecurrence={setRecurrence}
+          onSetImage={setImage}
           numbering={numbering}
           onReorderActive={reorderActive}
         />

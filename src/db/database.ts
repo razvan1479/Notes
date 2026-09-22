@@ -30,7 +30,8 @@ async function getDb(): Promise<Database> {
           scheduled_at INTEGER,
           note         TEXT,
           recurrence   TEXT,
-          recur_anchor INTEGER
+          recur_anchor INTEGER,
+          image        TEXT
         );
         CREATE TABLE IF NOT EXISTS subtasks (
           id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,6 +86,11 @@ async function getDb(): Promise<Database> {
       } catch {
         /* coloana exista deja */
       }
+      try {
+        await db.execute(`ALTER TABLE tasks ADD COLUMN image TEXT;`);
+      } catch {
+        /* coloana exista deja */
+      }
       // Tabele noi (sub-task-uri si statistici) — sigure daca deja exista.
       try {
         await db.execute(
@@ -134,6 +140,7 @@ function rowToTask(r: TaskRow): Task {
     note: r.note ?? null,
     recurrence: (r.recurrence as Recurrence | null) ?? null,
     recurAnchor: r.recur_anchor == null ? null : Number(r.recur_anchor),
+    image: r.image ?? null,
     subtasks: [],
   };
 }
@@ -192,6 +199,7 @@ export async function addTask(text: string): Promise<Task> {
     note: null,
     recurrence: null,
     recurAnchor: null,
+    image: null,
     subtasks: [],
   };
 }
@@ -467,4 +475,12 @@ export async function deleteReport(month: string): Promise<void> {
   await ensureReportsTable();
   const db = await getDb();
   await db.execute(`DELETE FROM reports WHERE month = $1;`, [month]);
+}
+
+// ---------- Poza atasata unui task ----------
+
+/** Salveaza (sau sterge, cu null) poza unui task, ca data URL base64. */
+export async function setTaskImage(id: number, image: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE tasks SET image = $1 WHERE id = $2;`, [image, id]);
 }

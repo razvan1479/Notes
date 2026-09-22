@@ -127,6 +127,11 @@ export const translations: Record<Lang, Dict> = {
     "note.placeholder": "Note (details, links)…",
     "note.add": "+ Add a note",
     "note.edit_hint": "Click to edit",
+    "photo.add": "+ Add photo",
+    "photo.replace": "Replace",
+    "photo.remove": "Remove",
+    "photo.close": "Close",
+
     "recur.label": "Repeat",
     "recur.none": "Doesn't repeat",
     "recur.daily": "Daily",
@@ -325,6 +330,11 @@ export const translations: Record<Lang, Dict> = {
     "note.placeholder": "Notă (detalii, linkuri)…",
     "note.add": "+ Adaugă o notă",
     "note.edit_hint": "Click pentru a edita",
+    "photo.add": "+ Adaugă poză",
+    "photo.replace": "Înlocuiește",
+    "photo.remove": "Elimină",
+    "photo.close": "Închide",
+
     "recur.label": "Repetare",
     "recur.none": "Nu se repetă",
     "recur.daily": "Zilnic",

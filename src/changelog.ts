@@ -30,6 +30,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.12",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Poți atașa o poză la un task, din panoul de detalii. Click pe miniatură o deschide mărită; ai butoane de înlocuit și eliminat.",
+        en: "You can attach a photo to a task, from the details panel. Clicking the thumbnail opens it full-size; you can replace or remove it.",
+      },
+    ],
+  },
+  {
     version: "6.7.11",
     date: "2026-07-31",
     changes: [

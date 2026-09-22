@@ -22,6 +22,8 @@ export interface Task {
   recurrence: Recurrence | null;
   /** Ziua-ancora pentru recurenta lunara (1-31), sau null. */
   recurAnchor: number | null;
+  /** Poza atasata, ca data URL (base64), sau null. */
+  image: string | null;
   /** Sub-task-urile (pasii). Se incarca odata cu task-ul. */
   subtasks: Subtask[];
 }
@@ -50,6 +52,7 @@ export interface TaskRow {
   note: string | null;
   recurrence: string | null;
   recur_anchor: number | null;
+  image: string | null;
 }
 
 export interface SubtaskRow {
