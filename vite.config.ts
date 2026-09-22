@@ -24,6 +24,7 @@ export default defineConfig({
       input: {
         main: "index.html",
         report: "report.html",
+        image: "image.html",
       },
     },
   },

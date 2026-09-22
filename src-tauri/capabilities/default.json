@@ -4,7 +4,8 @@
   "description": "Permisiuni pentru fereastra principala: baza de date locala si pornire automata.",
   "windows": [
     "main",
-    "report"
+    "report",
+    "image-*"
   ],
   "permissions": [
     "core:default",

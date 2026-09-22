@@ -6,6 +6,8 @@ import { useI18n } from "../i18n/i18n";
 import type { Task, Recurrence } from "../types";
 import type { NumberingStyle } from "../hooks/useNumbering";
 import { readAndCompressImage } from "../lib/image";
+import { putImagePayload } from "../db/database";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import {
   AUTO_DELETE_MS,
   WARNING_MS,
@@ -25,6 +27,8 @@ interface Props {
   onTogglePriority: (id: number) => void;
   onOpenReminder: (id: number) => void;
   onAddSubtask: (taskId: number, text: string) => void;
+  onAddSubtaskImage: (taskId: number, image: string) => void;
+  onSetSubtaskImage: (taskId: number, subId: number, image: string | null) => void;
   onToggleSubtask: (taskId: number, subId: number) => void;
   onEditSubtask: (taskId: number, subId: number, text: string) => void;
   onDeleteSubtask: (taskId: number, subId: number) => void;
@@ -105,7 +109,6 @@ export function TaskItem(props: Props) {
   const [subDraft, setSubDraft] = useState("");
   const [noteDraft, setNoteDraft] = useState(task.note ?? "");
   const [editingNote, setEditingNote] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,11 +129,6 @@ export function TaskItem(props: Props) {
   useEffect(() => {
     if (!expanded) setEditingNote(false);
   }, [expanded]);
-
-  // Daca task-ul nu mai e selectat (s-a dat click pe altul), inchidem panoul.
-  useEffect(() => {
-    if (!selected) setExpanded(false);
-  }, [selected]);
 
   const doneSubs = task.subtasks.filter((s) => s.done).length;
   const totalSubs = task.subtasks.length;
@@ -194,6 +192,78 @@ export function TaskItem(props: Props) {
   };
 
   // Prinde Ctrl+V cand panoul de detalii e deschis (pe zona lui).
+  // Deschide poza intr-o fereastra separata (mutabila, redimensionabila, cu zoom).
+  const openImageWindow = async () => {
+    if (!task.image) return;
+    const key = await putImagePayload(task.image);
+    const label = "image-" + task.id;
+    const existing = await WebviewWindow.getByLabel(label);
+    if (existing) {
+      await existing.show();
+      await existing.unminimize();
+      await existing.setFocus();
+      return;
+    }
+    const w = new WebviewWindow(label, {
+      url: "image.html?k=" + encodeURIComponent(key),
+      title: t("photo.window_title"),
+      width: 720,
+      height: 560,
+      minWidth: 320,
+      minHeight: 240,
+      resizable: true,
+      center: true,
+      decorations: true,
+    });
+    w.once("tauri://error", (err) => console.error("image window error", err));
+  };
+
+  // Deschide poza unui sub-task intr-o fereastra separata.
+  const openSubImageWindow = async (subId: number, image: string) => {
+    const key = await putImagePayload(image);
+    const label = "image-sub-" + subId;
+    const existing = await WebviewWindow.getByLabel(label);
+    if (existing) {
+      await existing.show();
+      await existing.unminimize();
+      await existing.setFocus();
+      return;
+    }
+    const w = new WebviewWindow(label, {
+      url: "image.html?k=" + encodeURIComponent(key),
+      title: t("photo.window_title"),
+      width: 720,
+      height: 560,
+      minWidth: 320,
+      minHeight: 240,
+      resizable: true,
+      center: true,
+      decorations: true,
+    });
+    w.once("tauri://error", (err) => console.error("image window error", err));
+  };
+
+  // Lipeste o imagine din clipboard ca sub-task nou (fara text).
+  const handleSubPaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type.startsWith("image/")) {
+        const blob = it.getAsFile();
+        if (blob) {
+          e.preventDefault();
+          try {
+            const dataUrl = await readAndCompressImage(blob);
+            props.onAddSubtaskImage(task.id, dataUrl);
+          } catch {
+            /* ignoram */
+          }
+        }
+        return;
+      }
+    }
+  };
+
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -370,7 +440,6 @@ export function TaskItem(props: Props) {
           aria-expanded={expanded}
           onClick={(e) => {
             e.stopPropagation();
-            props.onSelect(task.id);
             setExpanded((v) => !v);
           }}
         >
@@ -456,7 +525,7 @@ export function TaskItem(props: Props) {
           onClick={(e) => e.stopPropagation()}
           onPaste={handlePaste}
         >
-          <div className="sub-list">
+          <div className="sub-list" onPaste={handleSubPaste}>
             {task.subtasks.map((s) => (
               <div key={s.id} className="sub">
                 <button
@@ -471,9 +540,19 @@ export function TaskItem(props: Props) {
                     </svg>
                   )}
                 </button>
+                {s.image && (
+                  <img
+                    src={s.image}
+                    alt=""
+                    className="sub__thumb"
+                    title={t("photo.window_title")}
+                    onClick={() => openSubImageWindow(s.id, s.image!)}
+                  />
+                )}
                 <input
                   className={`sub__text ${s.done ? "sub__text--done" : ""}`}
                   value={s.text}
+                  placeholder={s.image ? t("subtask.photo_label") : ""}
                   onChange={(e) => props.onEditSubtask(task.id, s.id, e.target.value)}
                 />
                 <button
@@ -516,7 +595,7 @@ export function TaskItem(props: Props) {
                   src={task.image}
                   alt=""
                   className="task__photo-thumb"
-                  onClick={() => setLightboxOpen(true)}
+                  onClick={openImageWindow}
                 />
                 <div className="task__photo-actions">
                   <button
@@ -587,18 +666,6 @@ export function TaskItem(props: Props) {
         </div>
       )}
 
-      {lightboxOpen && task.image && (
-        <div className="lightbox" onClick={() => setLightboxOpen(false)}>
-          <img src={task.image} alt="" className="lightbox__img" />
-          <button
-            className="lightbox__close"
-            aria-label={t("photo.close")}
-            onClick={() => setLightboxOpen(false)}
-          >
-            ×
-          </button>
-        </div>
-      )}
     </div>
   );
 }

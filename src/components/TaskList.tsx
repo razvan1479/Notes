@@ -19,6 +19,8 @@ interface Props {
   onTogglePriority: (id: number) => void;
   onOpenReminder: (id: number) => void;
   onAddSubtask: (taskId: number, text: string) => void;
+  onAddSubtaskImage: (taskId: number, image: string) => void;
+  onSetSubtaskImage: (taskId: number, subId: number, image: string | null) => void;
   onToggleSubtask: (taskId: number, subId: number) => void;
   onEditSubtask: (taskId: number, subId: number, text: string) => void;
   onDeleteSubtask: (taskId: number, subId: number) => void;
@@ -82,6 +84,8 @@ export function TaskList(props: Props) {
       onTogglePriority={props.onTogglePriority}
       onOpenReminder={props.onOpenReminder}
       onAddSubtask={props.onAddSubtask}
+      onAddSubtaskImage={props.onAddSubtaskImage}
+      onSetSubtaskImage={props.onSetSubtaskImage}
       onToggleSubtask={props.onToggleSubtask}
       onEditSubtask={props.onEditSubtask}
       onDeleteSubtask={props.onDeleteSubtask}

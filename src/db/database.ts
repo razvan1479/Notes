@@ -38,7 +38,8 @@ async function getDb(): Promise<Database> {
           task_id    INTEGER NOT NULL,
           text       TEXT    NOT NULL DEFAULT '',
           done       INTEGER NOT NULL DEFAULT 0,
-          position   INTEGER NOT NULL DEFAULT 0
+          position   INTEGER NOT NULL DEFAULT 0,
+          image      TEXT
         );
         CREATE TABLE IF NOT EXISTS stats_daily (
           day        TEXT    PRIMARY KEY,
@@ -88,6 +89,11 @@ async function getDb(): Promise<Database> {
       }
       try {
         await db.execute(`ALTER TABLE tasks ADD COLUMN image TEXT;`);
+      } catch {
+        /* coloana exista deja */
+      }
+      try {
+        await db.execute(`ALTER TABLE subtasks ADD COLUMN image TEXT;`);
       } catch {
         /* coloana exista deja */
       }
@@ -163,6 +169,7 @@ export async function getAllTasks(): Promise<Task[]> {
       text: r.text ?? "",
       done: Number(r.done) === 1,
       position: Number(r.position),
+      image: r.image ?? null,
     };
     const arr = byTask.get(st.taskId) ?? [];
     arr.push(st);
@@ -357,6 +364,7 @@ export async function addSubtask(taskId: number, text: string): Promise<Subtask>
     text: text.trim(),
     done: false,
     position: nextPos,
+    image: null,
   };
 }
 
@@ -483,4 +491,50 @@ export async function deleteReport(month: string): Promise<void> {
 export async function setTaskImage(id: number, image: string | null): Promise<void> {
   const db = await getDb();
   await db.execute(`UPDATE tasks SET image = $1 WHERE id = $2;`, [image, id]);
+}
+
+// ---------- Transfer poza catre fereastra de vizualizare ----------
+// Poza e prea mare pentru a fi trecuta prin adresa ferestrei, asa ca o punem
+// intr-un tabel temporar sub o cheie; fereastra noua o citeste dupa cheie.
+
+async function ensureImageBufferTable(): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `CREATE TABLE IF NOT EXISTS image_buffer (
+      key  TEXT PRIMARY KEY,
+      data TEXT NOT NULL
+    );`
+  );
+}
+
+/** Pune poza in buffer si intoarce cheia de folosit in adresa ferestrei. */
+export async function putImagePayload(dataUrl: string): Promise<string> {
+  await ensureImageBufferTable();
+  const db = await getDb();
+  const key = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  // Curatam intrari vechi (peste 20), ca sa nu se adune.
+  await db.execute(
+    `DELETE FROM image_buffer WHERE key NOT IN (
+       SELECT key FROM image_buffer ORDER BY key DESC LIMIT 20
+     );`
+  );
+  await db.execute(`INSERT INTO image_buffer (key, data) VALUES ($1, $2);`, [key, dataUrl]);
+  return key;
+}
+
+/** Citeste poza din buffer dupa cheie (folosit de fereastra de imagine). */
+export async function getImagePayload(key: string): Promise<string | null> {
+  await ensureImageBufferTable();
+  const db = await getDb();
+  const rows = await db.select<{ data: string }[]>(
+    `SELECT data FROM image_buffer WHERE key = $1;`,
+    [key]
+  );
+  return rows[0]?.data ?? null;
+}
+
+/** Salveaza sau sterge (null) poza unui sub-task. */
+export async function setSubtaskImage(id: number, image: string | null): Promise<void> {
+  const db = await getDb();
+  await db.execute(`UPDATE subtasks SET image = $1 WHERE id = $2;`, [image, id]);
 }

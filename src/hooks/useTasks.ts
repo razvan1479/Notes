@@ -20,6 +20,7 @@ import {
   setTaskRecurrence,
   addSubtask as dbAddSubtask,
   setSubtaskDone,
+  setSubtaskImage,
   updateSubtaskText,
   deleteSubtask as dbDeleteSubtask,
   bumpDailyCompleted,
@@ -281,6 +282,27 @@ export function useTasks(onBonus?: (count: number) => void) {
     );
   }, []);
 
+  // Adauga un sub-task avand doar o poza (fara text). Intoarce id-ul creat.
+  const addSubtaskImage = useCallback(async (taskId: number, image: string) => {
+    const sub = await dbAddSubtask(taskId, "");
+    await setSubtaskImage(sub.id, image);
+    const withImg = { ...sub, image };
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, subtasks: [...t.subtasks, withImg] } : t))
+    );
+  }, []);
+
+  const setSubImage = useCallback(async (taskId: number, subId: number, image: string | null) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, subtasks: t.subtasks.map((s) => (s.id === subId ? { ...s, image } : s)) }
+          : t
+      )
+    );
+    await setSubtaskImage(subId, image);
+  }, []);
+
   const toggleSubtask = useCallback(async (taskId: number, subId: number) => {
     const task = tasksRef.current.find((t) => t.id === taskId);
     const sub = task?.subtasks.find((s) => s.id === subId);
@@ -363,6 +385,8 @@ export function useTasks(onBonus?: (count: number) => void) {
     setRecurrence,
     setImage,
     addSubtask,
+    addSubtaskImage,
+    setSubImage,
     toggleSubtask,
     editSubtask,
     removeSubtask,

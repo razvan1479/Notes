@@ -36,6 +36,7 @@ export interface Subtask {
   text: string;
   done: boolean;
   position: number;
+  image: string | null;
 }
 
 /** Forma bruta a randului din SQLite (numere in loc de boolean). */
@@ -61,6 +62,7 @@ export interface SubtaskRow {
   text: string;
   done: number;
   position: number;
+  image: string | null;
 }
 
 export type ThemeMode = "light" | "dark";

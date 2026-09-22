@@ -30,13 +30,34 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.14",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Poți lipi o poză pe un sub-task, cu Ctrl+V în lista de pași — creează un pas cu poză, fără să scrii text. Click pe miniatură o deschide în fereastră separată.",
+        en: "You can paste a photo onto a sub-task, with Ctrl+V in the steps list — it creates a step with a photo, no text needed. Clicking the thumbnail opens it in a separate window.",
+      },
+      {
+        type: "fix",
+        ro: "Căsuțele bifate ale sub-task-urilor nu se vedeau clar; acum se disting corect.",
+        en: "Checked sub-task boxes weren't clearly visible; they now show correctly.",
+      },
+      {
+        type: "fix",
+        ro: "Când deschideai detaliile unui task, acesta rămânea selectat (colorat albastru); acum detaliile nu mai selectează task-ul.",
+        en: "Opening a task's details left it selected (highlighted blue); details no longer select the task.",
+      },
+    ],
+  },
+  {
     version: "6.7.13",
     date: "2026-07-31",
     changes: [
       {
         type: "new",
-        ro: "Poți lipi o poză din clipboard (Print Screen / Copy image) direct pe task, cu Ctrl+V în panoul de detalii sau butonul „Lipește”.",
-        en: "You can paste a photo from the clipboard (Print Screen / Copy image) straight onto a task, with Ctrl+V in the details panel or the “Paste” button.",
+        ro: "Poți lipi o poză din clipboard (Print Screen / Copy image) direct pe task, cu Ctrl+V în panoul de detalii sau butonul „Lipește”. Click pe poză o deschide într-o fereastră separată, pe care o poți muta, redimensiona și în care poți mări (zoom cu scroll).",
+        en: "You can paste a photo from the clipboard (Print Screen / Copy image) straight onto a task, with Ctrl+V in the details panel or the “Paste” button. Clicking the photo opens it in a separate window you can move, resize, and zoom (scroll to zoom).",
       },
     ],
   },
