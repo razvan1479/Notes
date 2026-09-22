@@ -128,6 +128,13 @@ export function useTasks(onBonus?: (count: number) => void) {
     setTasks((prev) => [...prev, task]);
   }, []);
 
+  // Creeaza un task direct dintr-o poza lipita (screenshot), cu text optional.
+  const addWithImage = useCallback(async (image: string, text = "") => {
+    const task = await dbAdd(text.trim());
+    await setTaskImage(task.id, image);
+    setTasks((prev) => [...prev, { ...task, image }]);
+  }, []);
+
   /** Adauga un task programat pe o data (pentru calendar, FARA alarma/pop-up)
       si, optional, prioritar. */
   const addScheduled = useCallback(
@@ -374,6 +381,7 @@ export function useTasks(onBonus?: (count: number) => void) {
     loading,
     now,
     add,
+    addWithImage,
     addScheduled,
     addWithReminder,
     editText,

@@ -20,7 +20,7 @@ interface Props {
   task: Task;
   now: number;
   selected: boolean;
-  onSelect: (id: number) => void;
+  onSelect: (id: number | null) => void;
   onToggle: (id: number) => void;
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;
@@ -174,20 +174,28 @@ export function TaskItem(props: Props) {
   };
 
   // Lipeste o imagine din clipboard (Print Screen, "Copy image" etc.).
-  const pasteImageFromClipboard = async () => {
-    try {
-      const items = await navigator.clipboard.read();
-      for (const item of items) {
-        const type = item.types.find((tp) => tp.startsWith("image/"));
-        if (type) {
-          const blob = await item.getType(type);
-          const dataUrl = await readAndCompressImage(blob);
-          props.onSetImage(task.id, dataUrl);
-          return;
+  // Butonul "Lipeste" pentru task: focuseaza un camp ascuns si citeste ce se
+  // lipeste acolo (Ctrl+V real). navigator.clipboard.read e adesea blocat in
+  // webview, asa ca folosim un camp care prinde evenimentul de paste.
+  const pasteHelperRef = useRef<HTMLTextAreaElement>(null);
+  // Paste pe campul-ajutor: atasam poza la task.
+  const handleHelperPaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type.startsWith("image/")) {
+        const blob = it.getAsFile();
+        if (blob) {
+          e.preventDefault();
+          try {
+            const dataUrl = await readAndCompressImage(blob);
+            props.onSetImage(task.id, dataUrl);
+          } catch {
+            /* ignoram */
+          }
         }
+        return;
       }
-    } catch {
-      /* clipboard fara imagine sau permisiune refuzata */
     }
   };
 
@@ -440,6 +448,8 @@ export function TaskItem(props: Props) {
           aria-expanded={expanded}
           onClick={(e) => {
             e.stopPropagation();
+            // Deschidem/inchidem panoul si deselectam task-ul, ca sa nu ramana albastru.
+            props.onSelect(null);
             setExpanded((v) => !v);
           }}
         >
@@ -604,9 +614,6 @@ export function TaskItem(props: Props) {
                   >
                     {t("photo.replace")}
                   </button>
-                  <button className="report__mini" onClick={pasteImageFromClipboard}>
-                    {t("photo.paste")}
-                  </button>
                   <button
                     className="report__mini"
                     onClick={() => props.onSetImage(task.id, null)}
@@ -617,14 +624,18 @@ export function TaskItem(props: Props) {
               </div>
             ) : (
               <div className="task__photo-empty">
+                <textarea
+                  ref={pasteHelperRef}
+                  className="task__paste-field"
+                  placeholder={t("photo.paste_here")}
+                  readOnly
+                  onPaste={handleHelperPaste}
+                />
                 <button
                   className="task__photo-add"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {t("photo.add")}
-                </button>
-                <button className="task__photo-add" onClick={pasteImageFromClipboard}>
-                  {t("photo.paste")}
                 </button>
               </div>
             )}

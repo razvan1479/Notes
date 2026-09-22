@@ -41,7 +41,7 @@ function norm(s: string): string {
 export default function App() {
   const bonusRef = useRef<(count: number) => void>(() => {});
   const onBonus = useCallback((count: number) => bonusRef.current(count), []);
-  const { tasks, loading, now, add, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, setImage, addSubtask, addSubtaskImage, setSubImage, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
+  const { tasks, loading, now, add, addWithImage, addScheduled, addWithReminder, editText, toggle, remove, togglePriority, setReminder, setNote, setRecurrence, setImage, addSubtask, addSubtaskImage, setSubImage, toggleSubtask, editSubtask, removeSubtask, resetAll, reorderActive, tasksRef } = useTasks(onBonus);
   const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const { numbering, setNumbering } = useNumbering();
   const update = useUpdate();
@@ -277,7 +277,7 @@ onOpenStats={() => setStatsOpen(true)}
         onOpen={() => setAchievementsOpen(true)}
       />
 
-      <TaskInput ref={addInputRef} onAdd={add} />
+      <TaskInput ref={addInputRef} onAdd={add} onAddImage={addWithImage} />
 
       {searchOpen && (
         <SearchBar ref={searchInputRef} value={query} onChange={setQuery} onClose={closeSearch} />

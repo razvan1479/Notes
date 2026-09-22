@@ -2218,3 +2218,23 @@ body {
   cursor: zoom-in;
   flex-shrink: 0;
 }
+
+/* Câmp pentru lipit screenshot la task (Ctrl+V) */
+.task__paste-field {
+  flex: 1;
+  min-height: 34px;
+  resize: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 8px 10px;
+  cursor: text;
+}
+.task__paste-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  border-style: solid;
+}

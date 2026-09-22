@@ -134,6 +134,7 @@ export const translations: Record<Lang, Dict> = {
     "photo.remove": "Remove",
     "photo.close": "Close",
     "photo.window_title": "Image",
+    "photo.paste_here": "Click here and press Ctrl+V to paste a screenshot",
 
     "recur.label": "Repeat",
     "recur.none": "Doesn't repeat",
@@ -340,6 +341,7 @@ export const translations: Record<Lang, Dict> = {
     "photo.remove": "Elimină",
     "photo.close": "Închide",
     "photo.window_title": "Imagine",
+    "photo.paste_here": "Dă click aici și apasă Ctrl+V ca să lipești un screenshot",
 
     "recur.label": "Repetare",
     "recur.none": "Nu se repetă",

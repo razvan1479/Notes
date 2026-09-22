@@ -12,7 +12,7 @@ interface Props {
   now: number;
   selectedId: number | null;
   hasQuery: boolean;
-  onSelect: (id: number) => void;
+  onSelect: (id: number | null) => void;
   onToggle: (id: number) => void;
   onEditText: (id: number, text: string) => void;
   onDelete: (id: number) => void;

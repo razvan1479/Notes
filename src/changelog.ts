@@ -30,6 +30,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.15",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "new",
+        ro: "Poți lipi un screenshot direct în bara de adăugare (sus) ca să creezi un task cu poză, cu Ctrl+V.",
+        en: "You can paste a screenshot straight into the add bar (top) to create a task with a photo, with Ctrl+V.",
+      },
+      {
+        type: "fix",
+        ro: "Lipirea pozei pe un task normal funcționează acum: în panoul de detalii ai un câmp în care dai click și apeși Ctrl+V.",
+        en: "Pasting a photo onto a normal task now works: the details panel has a field you click and press Ctrl+V in.",
+      },
+      {
+        type: "fix",
+        ro: "Când deschizi detaliile unui task, acesta se deselectează automat, ca să nu mai rămână colorat albastru.",
+        en: "Opening a task's details now deselects it automatically, so it no longer stays highlighted blue.",
+      },
+    ],
+  },
+  {
     version: "6.7.14",
     date: "2026-07-31",
     changes: [
@@ -42,11 +63,6 @@ export const CHANGELOG: ChangelogEntry[] = [
         type: "fix",
         ro: "Căsuțele bifate ale sub-task-urilor nu se vedeau clar; acum se disting corect.",
         en: "Checked sub-task boxes weren't clearly visible; they now show correctly.",
-      },
-      {
-        type: "fix",
-        ro: "Când deschideai detaliile unui task, acesta rămânea selectat (colorat albastru); acum detaliile nu mai selectează task-ul.",
-        en: "Opening a task's details left it selected (highlighted blue); details no longer select the task.",
       },
     ],
   },
