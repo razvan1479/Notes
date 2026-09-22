@@ -30,6 +30,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "6.7.16",
+    date: "2026-07-31",
+    changes: [
+      {
+        type: "fix",
+        ro: "Lipirea unui screenshot cu Ctrl+V în bara de adăugare creează acum corect un task cu poză (înainte crea un task gol).",
+        en: "Pasting a screenshot with Ctrl+V in the add bar now correctly creates a task with the photo (it previously made an empty task).",
+      },
+      {
+        type: "improved",
+        ro: "În detaliile task-ului a rămas doar câmpul de lipit screenshot (Ctrl+V); butonul de ales fișier a fost scos.",
+        en: "In task details, only the paste-a-screenshot field (Ctrl+V) remains; the file-picker button was removed.",
+      },
+    ],
+  },
+  {
     version: "6.7.15",
     date: "2026-07-31",
     changes: [

@@ -35,3 +35,22 @@ export function readAndCompressImage(file: File | Blob): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+/** Cauta o imagine in datele lipite (items sau files) — robust pentru webview. */
+export function findPastedImage(dt: DataTransfer | null): File | null {
+  if (!dt) return null;
+  if (dt.files && dt.files.length) {
+    for (const f of Array.from(dt.files)) {
+      if (f.type.startsWith("image/")) return f;
+    }
+  }
+  if (dt.items && dt.items.length) {
+    for (const it of Array.from(dt.items)) {
+      if (it.kind === "file" && it.type.startsWith("image/")) {
+        const f = it.getAsFile();
+        if (f) return f;
+      }
+    }
+  }
+  return null;
+}

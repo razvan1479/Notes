@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n/i18n";
 import type { Task, Recurrence } from "../types";
 import type { NumberingStyle } from "../hooks/useNumbering";
-import { readAndCompressImage } from "../lib/image";
+import { readAndCompressImage, findPastedImage } from "../lib/image";
 import { putImagePayload } from "../db/database";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import {
@@ -109,7 +109,6 @@ export function TaskItem(props: Props) {
   const [subDraft, setSubDraft] = useState("");
   const [noteDraft, setNoteDraft] = useState(task.note ?? "");
   const [editingNote, setEditingNote] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -161,18 +160,6 @@ export function TaskItem(props: Props) {
     if ((task.note ?? "") !== (clean ?? "")) props.onSetNote(task.id, clean);
   };
 
-  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // permite re-alegerea aceluiasi fisier
-    if (!file) return;
-    try {
-      const dataUrl = await readAndCompressImage(file);
-      props.onSetImage(task.id, dataUrl);
-    } catch {
-      /* fisier invalid, ignoram */
-    }
-  };
-
   // Lipeste o imagine din clipboard (Print Screen, "Copy image" etc.).
   // Butonul "Lipeste" pentru task: focuseaza un camp ascuns si citeste ce se
   // lipeste acolo (Ctrl+V real). navigator.clipboard.read e adesea blocat in
@@ -180,22 +167,14 @@ export function TaskItem(props: Props) {
   const pasteHelperRef = useRef<HTMLTextAreaElement>(null);
   // Paste pe campul-ajutor: atasam poza la task.
   const handleHelperPaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const it of items) {
-      if (it.type.startsWith("image/")) {
-        const blob = it.getAsFile();
-        if (blob) {
-          e.preventDefault();
-          try {
-            const dataUrl = await readAndCompressImage(blob);
-            props.onSetImage(task.id, dataUrl);
-          } catch {
-            /* ignoram */
-          }
-        }
-        return;
-      }
+    const img = findPastedImage(e.clipboardData);
+    if (!img) return;
+    e.preventDefault();
+    try {
+      const dataUrl = await readAndCompressImage(img);
+      props.onSetImage(task.id, dataUrl);
+    } catch {
+      /* ignoram */
     }
   };
 
@@ -253,42 +232,26 @@ export function TaskItem(props: Props) {
 
   // Lipeste o imagine din clipboard ca sub-task nou (fara text).
   const handleSubPaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const it of items) {
-      if (it.type.startsWith("image/")) {
-        const blob = it.getAsFile();
-        if (blob) {
-          e.preventDefault();
-          try {
-            const dataUrl = await readAndCompressImage(blob);
-            props.onAddSubtaskImage(task.id, dataUrl);
-          } catch {
-            /* ignoram */
-          }
-        }
-        return;
-      }
+    const img = findPastedImage(e.clipboardData);
+    if (!img) return;
+    e.preventDefault();
+    try {
+      const dataUrl = await readAndCompressImage(img);
+      props.onAddSubtaskImage(task.id, dataUrl);
+    } catch {
+      /* ignoram */
     }
   };
 
   const handlePaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const it of items) {
-      if (it.type.startsWith("image/")) {
-        const blob = it.getAsFile();
-        if (blob) {
-          e.preventDefault();
-          try {
-            const dataUrl = await readAndCompressImage(blob);
-            props.onSetImage(task.id, dataUrl);
-          } catch {
-            /* ignoram */
-          }
-        }
-        return;
-      }
+    const img = findPastedImage(e.clipboardData);
+    if (!img) return;
+    e.preventDefault();
+    try {
+      const dataUrl = await readAndCompressImage(img);
+      props.onSetImage(task.id, dataUrl);
+    } catch {
+      /* ignoram */
     }
   };
 
@@ -592,13 +555,6 @@ export function TaskItem(props: Props) {
           </div>
 
           <div className="task__photo-row">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="task__photo-input"
-              onChange={handleImagePick}
-            />
             {task.image ? (
               <div className="task__photo-wrap">
                 <img
@@ -610,12 +566,6 @@ export function TaskItem(props: Props) {
                 <div className="task__photo-actions">
                   <button
                     className="report__mini"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {t("photo.replace")}
-                  </button>
-                  <button
-                    className="report__mini"
                     onClick={() => props.onSetImage(task.id, null)}
                   >
                     {t("photo.remove")}
@@ -623,21 +573,13 @@ export function TaskItem(props: Props) {
                 </div>
               </div>
             ) : (
-              <div className="task__photo-empty">
-                <textarea
-                  ref={pasteHelperRef}
-                  className="task__paste-field"
-                  placeholder={t("photo.paste_here")}
-                  readOnly
-                  onPaste={handleHelperPaste}
-                />
-                <button
-                  className="task__photo-add"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {t("photo.add")}
-                </button>
-              </div>
+              <textarea
+                ref={pasteHelperRef}
+                className="task__paste-field"
+                placeholder={t("photo.paste_here")}
+                readOnly
+                onPaste={handleHelperPaste}
+              />
             )}
           </div>
 

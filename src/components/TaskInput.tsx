@@ -4,7 +4,7 @@
 
 import { forwardRef, useState } from "react";
 import { useI18n } from "../i18n/i18n";
-import { readAndCompressImage } from "../lib/image";
+import { readAndCompressImage, findPastedImage } from "../lib/image";
 
 interface Props {
   onAdd: (text: string) => void;
@@ -24,23 +24,16 @@ export const TaskInput = forwardRef<HTMLInputElement, Props>(
     };
 
     const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (const it of items) {
-        if (it.type.startsWith("image/")) {
-          const blob = it.getAsFile();
-          if (blob) {
-            e.preventDefault();
-            try {
-              const dataUrl = await readAndCompressImage(blob);
-              onAddImage(dataUrl, value.trim());
-              setValue("");
-            } catch {
-              /* ignoram */
-            }
-          }
-          return;
-        }
+      const img = findPastedImage(e.clipboardData);
+      if (!img) return; // nu e imagine -> lasa lipirea normala de text
+      e.preventDefault();
+      const text = value.trim();
+      try {
+        const dataUrl = await readAndCompressImage(img);
+        onAddImage(dataUrl, text);
+        setValue("");
+      } catch {
+        /* imagine invalida, ignoram */
       }
     };
 
